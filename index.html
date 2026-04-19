@@ -31,13 +31,13 @@
         .admin-btn { display: block; text-align: center; margin-top: 2rem; color: #94a3b8; font-size: 0.8rem; cursor: pointer; text-decoration: underline; transition: 0.3s;}
         .admin-btn:hover { color: #f59e0b; }
         
-        /* Box Xác thực PIN */
+        /* Box Xác Thực PIN */
         #adminAuth { display: none; background: #1e293b; padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem; text-align: center; border: 2px solid #f59e0b;}
         #adminAuth input { width: 100%; padding: 10px; margin: 10px 0; text-align: center; font-size: 1.2rem; letter-spacing: 5px; border-radius: 4px; border: none; outline: none;}
         #adminAuth button { width: 100%; padding: 10px; background: #f59e0b; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s;}
         #adminAuth button:hover { background: #d97706; }
         
-        /* Bảng điều khiển Admin */
+        /* Bảng Quản Lý Của Admin */
         #adminPanel { display: none; background: #334155; padding: 1rem; border-radius: 8px; margin-top: 1rem; border: 2px solid #22c55e; max-height: 400px; overflow-y: auto;}
         .user-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #475569; font-size: 0.85rem;}
         
@@ -47,6 +47,10 @@
         .revoke-btn { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: bold;}
         .revoke-btn:hover { background: #dc2626; }
     </style>
+
+    <!-- NHÚNG THƯ VIỆN FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -117,34 +121,24 @@
 
     </div>
 
-    <!-- ================= NHÚNG THƯ VIỆN FIREBASE TỪ GOOGLE ================= -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-
+    <!-- MÃ ĐIỀU KHIỂN HỆ THỐNG (JAVASCRIPT) -->
     <script>
-        // 1. CẤU HÌNH FIREBASE CỦA RIÊNG BẠN (COPY TỪ FIREBASE CONSOLE DÁN VÀO ĐÂY)
+        // 1. CẤU HÌNH FIREBASE CỦA BẠN
         const firebaseConfig = {
-    apiKey: "AIzaSyDt9CoUM6FiU_ImjYTDD1UwKEXcaxK0vuw",
-    authDomain: "giai-tich-3-chuong-1-hust.firebaseapp.com",
-    projectId: "giai-tich-3-chuong-1-hust",
-    storageBucket: "giai-tich-3-chuong-1-hust.firebasestorage.app",
-    messagingSenderId: "273977526322",
-    appId: "1:273977526322:web:433839123a7ea3bab2942b",
-    measurementId: "G-ERY22GZ58G"
-  }
-            apiKey: "AIzaSy_DAY_LA_MA_GIA_CUA_BAN_xxxx",
-            authDomain: "hust-giaitich3.firebaseapp.com",
-            projectId: "hust-giaitich3",
-            storageBucket: "hust-giaitich3.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef123456"
+            apiKey: "AIzaSyDt9CoUM6FiU_ImjYTDD1UwKEXcaxK0vuw",
+            authDomain: "giai-tich-3-chuong-1-hust.firebaseapp.com",
+            projectId: "giai-tich-3-chuong-1-hust",
+            storageBucket: "giai-tich-3-chuong-1-hust.firebasestorage.app",
+            messagingSenderId: "273977526322",
+            appId: "1:273977526322:web:433839123a7ea3bab2942b",
+            measurementId: "G-ERY22GZ58G"
         };
 
         // 2. KHỞI TẠO FIREBASE VÀ KẾT NỐI DATABASE
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ================= LOGIC SINH VIÊN (GIAO TIẾP VỚI ĐÁM MÂY) =================
+        // ================= LOGIC SINH VIÊN =================
         function toggleForm(type) {
             document.getElementById('message').innerText = "";
             if (type === 'register') {
@@ -162,7 +156,7 @@
             msgBox.className = type;
         }
 
-        // HÀM ĐĂNG KÝ HỌC
+        // HÀM ĐĂNG KÝ (ĐẨY LÊN FIREBASE)
         async function handleRegister() {
             const fullname = document.getElementById('regFullName').value;
             const username = document.getElementById('regUsername').value;
@@ -171,13 +165,13 @@
             if (!fullname || !username || !password) return showMessage("Vui lòng điền đủ thông tin!", "error");
 
             try {
-                // Kiểm tra mã sinh viên đã tồn tại trên Firestore chưa
+                // Kiểm tra xem MSSV đã có ai đăng ký chưa
                 const userDoc = await db.collection("users").doc(username).get();
                 if (userDoc.exists) {
                     return showMessage("Mã sinh viên này đã được đăng ký!", "error");
                 }
 
-                // Ghi dữ liệu lên đám mây với status là 'pending'
+                // Ghi thông tin tài khoản với trạng thái chờ duyệt (pending)
                 await db.collection("users").doc(username).set({
                     fullname: fullname,
                     password: password,
@@ -185,14 +179,14 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                showMessage("Đăng ký thành công! Vui lòng chờ Admin duyệt.", "success");
+                showMessage("Đăng ký thành công! Vui lòng chờ Admin duyệt để được vào học.", "success");
                 setTimeout(() => toggleForm('login'), 3000);
             } catch (error) {
                 showMessage("Lỗi kết nối máy chủ: " + error.message, "error");
             }
         }
 
-        // HÀM ĐĂNG NHẬP
+        // HÀM ĐĂNG NHẬP (LẤY TỪ FIREBASE)
         async function handleLogin() {
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
@@ -200,7 +194,6 @@
             if (!username || !password) return showMessage("Vui lòng điền đủ thông tin!", "error");
 
             try {
-                // Rút dữ liệu người dùng từ đám mây về
                 const userDoc = await db.collection("users").doc(username).get();
                 
                 if (!userDoc.exists) return showMessage("Tài khoản không tồn tại!", "error");
@@ -208,34 +201,35 @@
                 const userData = userDoc.data();
                 if (userData.password !== password) return showMessage("Sai mật khẩu!", "error");
                 
-                // Xác thực các lớp kiểm duyệt
+                // Xử lý các trạng thái tài khoản
                 if (userData.status === 'pending') {
-                    return showMessage("Tài khoản ĐANG CHỜ DUYỆT. Vui lòng liên hệ Admin!", "warning");
+                    return showMessage("Tài khoản của bạn ĐANG CHỜ DUYỆT. Vui lòng liên hệ Admin!", "warning");
                 }
                 if (userData.status === 'revoked') {
-                    return showMessage("Tài khoản đã BỊ HỦY quyền truy cập khóa học!", "error");
+                    return showMessage("Tài khoản của bạn đã BỊ HỦY quyền truy cập khóa học!", "error");
                 }
 
                 if (userData.status === 'approved') {
-                    // Cấp vé thông hành vào Session Storage như cũ
+                    // Cấp vé thông hành (Session) nếu thành công
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('currentUser', userData.fullname);
-                    window.location.href = 'ly_thuyet.html'; 
+                    window.location.href = 'ly_thuyet.html'; // Chuyển hướng vào trang học
                 }
             } catch (error) {
                 showMessage("Lỗi kết nối máy chủ!", "error");
             }
         }
 
-        // ================= LOGIC ADMIN (GIỮ NGUYÊN BẢO MẬT MÃ PIN) =================
+        // ================= LOGIC ADMIN & BẢO MẬT PIN =================
         const ADMIN_PIN = "190922";
         const MAX_FAIL_ATTEMPTS = 3;
 
         function openAdminAuth() {
             if (localStorage.getItem('adminDeviceBanned') === 'true') {
-                alert("🚫 THIẾT BỊ NÀY ĐÃ BỊ CẤM!");
+                alert("🚫 CẢNH BÁO BẢO MẬT: Thiết bị này đã bị cấm vĩnh viễn khỏi khu vực Admin do nhập sai mã PIN quá nhiều lần!");
                 return;
             }
+
             const adminPanel = document.getElementById('adminPanel');
             const authBox = document.getElementById('adminAuth');
             
@@ -249,25 +243,37 @@
         }
 
         function verifyAdminPin() {
+            if (localStorage.getItem('adminDeviceBanned') === 'true') {
+                alert("🚫 LỖI: Thiết bị đã bị cấm!");
+                document.getElementById('adminAuth').style.display = 'none';
+                return;
+            }
+
             const enteredPin = document.getElementById('adminPinInput').value;
             let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
+            const errorMsgBox = document.getElementById('adminErrorMsg');
 
             if (enteredPin === ADMIN_PIN) {
+                // ĐĂNG NHẬP ADMIN THÀNH CÔNG
                 localStorage.setItem('adminFailedAttempts', '0'); 
                 document.getElementById('adminAuth').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
-                // Kích hoạt hàm lắng nghe dữ liệu từ Database
-                renderUserListRealtime(); 
+                // Gọi hàm lắng nghe thay đổi dữ liệu Real-time
+                renderUserListRealtime();
             } else {
+                // NHẬP SAI PIN
                 failedAttempts++;
                 localStorage.setItem('adminFailedAttempts', failedAttempts);
-                if (failedAttempts >= MAX_FAIL_ATTEMPTS) {
+                let attemptsLeft = MAX_FAIL_ATTEMPTS - failedAttempts;
+
+                if (attemptsLeft <= 0) {
                     localStorage.setItem('adminDeviceBanned', 'true');
                     document.getElementById('adminAuth').style.display = 'none';
-                    alert("🚨 BÁO ĐỘNG: Thiết bị đã bị đưa vào danh sách cấm!");
+                    alert("🚨 BÁO ĐỘNG: Bạn đã nhập sai mã PIN 3 lần. Thiết bị này CẤM truy cập khu vực Admin vĩnh viễn!");
                 } else {
-                    document.getElementById('adminErrorMsg').style.display = 'block';
-                    document.getElementById('adminErrorMsg').innerText = `Sai PIN! Còn ${MAX_FAIL_ATTEMPTS - failedAttempts} lần thử.`;
+                    errorMsgBox.style.display = 'block';
+                    errorMsgBox.innerText = `Sai mã PIN! Bạn còn ${attemptsLeft} lần thử trước khi bị cấm.`;
+                    document.getElementById('adminPinInput').value = '';
                 }
             }
         }
@@ -276,9 +282,9 @@
             document.getElementById('adminPanel').style.display = 'none';
         }
 
-        // ================= LẮNG NGHE VÀ DUYỆT TỪ ĐÁM MÂY (REALTIME) =================
+        // ================= LẮNG NGHE & QUẢN LÝ DỮ LIỆU ĐÁM MÂY =================
         function renderUserListRealtime() {
-            // Hàm onSnapshot giúp web của bạn TỰ ĐỘNG nhận dữ liệu khi có 1 SV vừa đăng ký
+            // Hàm onSnapshot sẽ tự động cập nhật lại danh sách nếu có sự thay đổi từ bất kì ai trên Internet
             db.collection("users").onSnapshot((snapshot) => {
                 let pendingHTML = '';
                 let approvedHTML = '';
@@ -306,23 +312,28 @@
             });
         }
 
-        // Hàm Đẩy dữ liệu cập nhật trạng thái "approved" lên Đám mây
         async function approveUser(username) {
-            await db.collection("users").doc(username).update({
-                status: 'approved'
-            });
+            try {
+                await db.collection("users").doc(username).update({
+                    status: 'approved'
+                });
+            } catch (error) {
+                alert("Lỗi khi duyệt: " + error.message);
+            }
         }
 
-        // Hàm Đẩy dữ liệu cập nhật trạng thái "revoked" lên Đám mây
         async function revokeUser(username) {
-            if (confirm(`⚠️ HỦY KHÓA HỌC CỦA SINH VIÊN: ${username}?`)) {
-                await db.collection("users").doc(username).update({
-                    status: 'revoked'
-                });
+            const confirmRevoke = confirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN HỦY KHÓA HỌC CỦA SINH VIÊN: ${username}?`);
+            if (confirmRevoke) {
+                try {
+                    await db.collection("users").doc(username).update({
+                        status: 'revoked'
+                    });
+                } catch (error) {
+                    alert("Lỗi khi hủy tài khoản: " + error.message);
+                }
             }
         }
     </script>
-</body>
-</html>
 </body>
 </html>
