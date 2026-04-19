@@ -117,13 +117,34 @@
 
     </div>
 
-    <script>
-        // Khởi tạo Database giả lập bằng LocalStorage
-        if (!localStorage.getItem('usersDB')) {
-            localStorage.setItem('usersDB', JSON.stringify({}));
-        }
+    <!-- ================= NHÚNG THƯ VIỆN FIREBASE TỪ GOOGLE ================= -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
-        // ================= LOGIC SINH VIÊN =================
+    <script>
+        // 1. CẤU HÌNH FIREBASE CỦA RIÊNG BẠN (COPY TỪ FIREBASE CONSOLE DÁN VÀO ĐÂY)
+        const firebaseConfig = {
+    apiKey: "AIzaSyDt9CoUM6FiU_ImjYTDD1UwKEXcaxK0vuw",
+    authDomain: "giai-tich-3-chuong-1-hust.firebaseapp.com",
+    projectId: "giai-tich-3-chuong-1-hust",
+    storageBucket: "giai-tich-3-chuong-1-hust.firebasestorage.app",
+    messagingSenderId: "273977526322",
+    appId: "1:273977526322:web:433839123a7ea3bab2942b",
+    measurementId: "G-ERY22GZ58G"
+  }
+            apiKey: "AIzaSy_DAY_LA_MA_GIA_CUA_BAN_xxxx",
+            authDomain: "hust-giaitich3.firebaseapp.com",
+            projectId: "hust-giaitich3",
+            storageBucket: "hust-giaitich3.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef123456"
+        };
+
+        // 2. KHỞI TẠO FIREBASE VÀ KẾT NỐI DATABASE
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ================= LOGIC SINH VIÊN (GIAO TIẾP VỚI ĐÁM MÂY) =================
         function toggleForm(type) {
             document.getElementById('message').innerText = "";
             if (type === 'register') {
@@ -141,61 +162,80 @@
             msgBox.className = type;
         }
 
-        function handleRegister() {
+        // HÀM ĐĂNG KÝ HỌC
+        async function handleRegister() {
             const fullname = document.getElementById('regFullName').value;
             const username = document.getElementById('regUsername').value;
             const password = document.getElementById('regPassword').value;
 
             if (!fullname || !username || !password) return showMessage("Vui lòng điền đủ thông tin!", "error");
 
-            let db = JSON.parse(localStorage.getItem('usersDB'));
-            if (db[username]) return showMessage("Mã sinh viên này đã được đăng ký!", "error");
+            try {
+                // Kiểm tra mã sinh viên đã tồn tại trên Firestore chưa
+                const userDoc = await db.collection("users").doc(username).get();
+                if (userDoc.exists) {
+                    return showMessage("Mã sinh viên này đã được đăng ký!", "error");
+                }
 
-            // Lưu user với trạng thái "pending" (Chờ duyệt)
-            db[username] = { fullname, password, status: 'pending' };
-            localStorage.setItem('usersDB', JSON.stringify(db));
+                // Ghi dữ liệu lên đám mây với status là 'pending'
+                await db.collection("users").doc(username).set({
+                    fullname: fullname,
+                    password: password,
+                    status: 'pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
-            showMessage("Đăng ký thành công! Vui lòng chờ Admin duyệt để được vào học.", "success");
-            setTimeout(() => toggleForm('login'), 3000);
+                showMessage("Đăng ký thành công! Vui lòng chờ Admin duyệt.", "success");
+                setTimeout(() => toggleForm('login'), 3000);
+            } catch (error) {
+                showMessage("Lỗi kết nối máy chủ: " + error.message, "error");
+            }
         }
 
-        function handleLogin() {
+        // HÀM ĐĂNG NHẬP
+        async function handleLogin() {
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
 
             if (!username || !password) return showMessage("Vui lòng điền đủ thông tin!", "error");
 
-            let db = JSON.parse(localStorage.getItem('usersDB'));
-            let user = db[username];
+            try {
+                // Rút dữ liệu người dùng từ đám mây về
+                const userDoc = await db.collection("users").doc(username).get();
+                
+                if (!userDoc.exists) return showMessage("Tài khoản không tồn tại!", "error");
+                
+                const userData = userDoc.data();
+                if (userData.password !== password) return showMessage("Sai mật khẩu!", "error");
+                
+                // Xác thực các lớp kiểm duyệt
+                if (userData.status === 'pending') {
+                    return showMessage("Tài khoản ĐANG CHỜ DUYỆT. Vui lòng liên hệ Admin!", "warning");
+                }
+                if (userData.status === 'revoked') {
+                    return showMessage("Tài khoản đã BỊ HỦY quyền truy cập khóa học!", "error");
+                }
 
-            if (!user) return showMessage("Tài khoản không tồn tại!", "error");
-            if (user.password !== password) return showMessage("Sai mật khẩu!", "error");
-            
-            // Xử lý các trạng thái tài khoản
-            if (user.status === 'pending') {
-                return showMessage("Tài khoản của bạn ĐANG CHỜ DUYỆT. Vui lòng liên hệ Admin!", "warning");
-            }
-            if (user.status === 'revoked') {
-                return showMessage("Tài khoản của bạn đã BỊ HỦY quyền truy cập khóa học!", "error");
-            }
-
-            if (user.status === 'approved') {
-                sessionStorage.setItem('isLoggedIn', 'true');
-                sessionStorage.setItem('currentUser', user.fullname);
-                window.location.href = 'ly_thuyet.html'; // Chuyển hướng vào trang học
+                if (userData.status === 'approved') {
+                    // Cấp vé thông hành vào Session Storage như cũ
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('currentUser', userData.fullname);
+                    window.location.href = 'ly_thuyet.html'; 
+                }
+            } catch (error) {
+                showMessage("Lỗi kết nối máy chủ!", "error");
             }
         }
 
-        // ================= LOGIC ADMIN & BẢO MẬT PIN =================
+        // ================= LOGIC ADMIN (GIỮ NGUYÊN BẢO MẬT MÃ PIN) =================
         const ADMIN_PIN = "190922";
         const MAX_FAIL_ATTEMPTS = 3;
 
         function openAdminAuth() {
             if (localStorage.getItem('adminDeviceBanned') === 'true') {
-                alert("🚫 CẢNH BÁO BẢO MẬT: Thiết bị này đã bị cấm vĩnh viễn khỏi khu vực Admin do nhập sai mã PIN quá nhiều lần!");
+                alert("🚫 THIẾT BỊ NÀY ĐÃ BỊ CẤM!");
                 return;
             }
-
             const adminPanel = document.getElementById('adminPanel');
             const authBox = document.getElementById('adminAuth');
             
@@ -209,36 +249,25 @@
         }
 
         function verifyAdminPin() {
-            if (localStorage.getItem('adminDeviceBanned') === 'true') {
-                alert("🚫 LỖI: Thiết bị đã bị cấm!");
-                document.getElementById('adminAuth').style.display = 'none';
-                return;
-            }
-
             const enteredPin = document.getElementById('adminPinInput').value;
             let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
-            const errorMsgBox = document.getElementById('adminErrorMsg');
 
             if (enteredPin === ADMIN_PIN) {
-                // ĐĂNG NHẬP ADMIN THÀNH CÔNG
                 localStorage.setItem('adminFailedAttempts', '0'); 
                 document.getElementById('adminAuth').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
-                renderUserList();
+                // Kích hoạt hàm lắng nghe dữ liệu từ Database
+                renderUserListRealtime(); 
             } else {
-                // NHẬP SAI PIN
                 failedAttempts++;
                 localStorage.setItem('adminFailedAttempts', failedAttempts);
-                let attemptsLeft = MAX_FAIL_ATTEMPTS - failedAttempts;
-
-                if (attemptsLeft <= 0) {
+                if (failedAttempts >= MAX_FAIL_ATTEMPTS) {
                     localStorage.setItem('adminDeviceBanned', 'true');
                     document.getElementById('adminAuth').style.display = 'none';
-                    alert("🚨 BÁO ĐỘNG: Bạn đã nhập sai mã PIN 3 lần. Thiết bị này CẤM truy cập khu vực Admin vĩnh viễn!");
+                    alert("🚨 BÁO ĐỘNG: Thiết bị đã bị đưa vào danh sách cấm!");
                 } else {
-                    errorMsgBox.style.display = 'block';
-                    errorMsgBox.innerText = `Sai mã PIN! Bạn còn ${attemptsLeft} lần thử trước khi bị cấm.`;
-                    document.getElementById('adminPinInput').value = '';
+                    document.getElementById('adminErrorMsg').style.display = 'block';
+                    document.getElementById('adminErrorMsg').innerText = `Sai PIN! Còn ${MAX_FAIL_ATTEMPTS - failedAttempts} lần thử.`;
                 }
             }
         }
@@ -247,54 +276,53 @@
             document.getElementById('adminPanel').style.display = 'none';
         }
 
-        // ================= XỬ LÝ DANH SÁCH =================
-        function renderUserList() {
-            let db = JSON.parse(localStorage.getItem('usersDB'));
-            let pendingHTML = '';
-            let approvedHTML = '';
+        // ================= LẮNG NGHE VÀ DUYỆT TỪ ĐÁM MÂY (REALTIME) =================
+        function renderUserListRealtime() {
+            // Hàm onSnapshot giúp web của bạn TỰ ĐỘNG nhận dữ liệu khi có 1 SV vừa đăng ký
+            db.collection("users").onSnapshot((snapshot) => {
+                let pendingHTML = '';
+                let approvedHTML = '';
 
-            for (let username in db) {
-                let user = db[username];
+                snapshot.forEach((doc) => {
+                    let username = doc.id;
+                    let user = doc.data();
+                    
+                    if (user.status === 'pending') {
+                        pendingHTML += `<div class="user-row" style="color: white;">
+                            <span><strong>${user.fullname}</strong><br><span style="color:#94a3b8; font-size: 0.75rem;">MSSV: ${username}</span></span>
+                            <button class="approve-btn" onclick="approveUser('${username}')">Duyệt</button>
+                        </div>`;
+                    } 
+                    else if (user.status === 'approved') {
+                        approvedHTML += `<div class="user-row" style="color: white;">
+                            <span><strong>${user.fullname}</strong><br><span style="color:#94a3b8; font-size: 0.75rem;">MSSV: ${username}</span></span>
+                            <button class="revoke-btn" onclick="revokeUser('${username}')">Hủy Học</button>
+                        </div>`;
+                    }
+                });
                 
-                // Render sinh viên chờ duyệt
-                if (user.status === 'pending') {
-                    pendingHTML += `<div class="user-row" style="color: white;">
-                        <span><strong>${user.fullname}</strong><br><span style="color:#94a3b8; font-size: 0.75rem;">MSSV: ${username}</span></span>
-                        <button class="approve-btn" onclick="approveUser('${username}')">Duyệt</button>
-                    </div>`;
-                } 
-                // Render sinh viên đang học (đã duyệt)
-                else if (user.status === 'approved') {
-                    approvedHTML += `<div class="user-row" style="color: white;">
-                        <span><strong>${user.fullname}</strong><br><span style="color:#94a3b8; font-size: 0.75rem;">MSSV: ${username}</span></span>
-                        <button class="revoke-btn" onclick="revokeUser('${username}')">Hủy Học</button>
-                    </div>`;
-                }
-            }
-            
-            document.getElementById('userList').innerHTML = pendingHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Không có tài khoản chờ duyệt.</i>";
-            document.getElementById('approvedList').innerHTML = approvedHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Chưa có học viên nào.</i>";
+                document.getElementById('userList').innerHTML = pendingHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Không có tài khoản chờ duyệt.</i>";
+                document.getElementById('approvedList').innerHTML = approvedHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Chưa có học viên nào.</i>";
+            });
         }
 
-        function approveUser(username) {
-            let db = JSON.parse(localStorage.getItem('usersDB'));
-            db[username].status = 'approved';
-            localStorage.setItem('usersDB', JSON.stringify(db));
-            renderUserList(); // Load lại ngay 2 danh sách
+        // Hàm Đẩy dữ liệu cập nhật trạng thái "approved" lên Đám mây
+        async function approveUser(username) {
+            await db.collection("users").doc(username).update({
+                status: 'approved'
+            });
         }
 
-        // Hàm Hủy khóa học
-        function revokeUser(username) {
-            // Hỏi xác nhận trước khi Hủy
-            const confirmRevoke = confirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN HỦY KHÓA HỌC CỦA SINH VIÊN: ${username}?\n\nSinh viên này sẽ lập tức bị khóa tài khoản đăng nhập.`);
-            
-            if (confirmRevoke) {
-                let db = JSON.parse(localStorage.getItem('usersDB'));
-                db[username].status = 'revoked'; // Đổi trạng thái thành "Đã hủy"
-                localStorage.setItem('usersDB', JSON.stringify(db));
-                renderUserList(); // Load lại ngay 2 danh sách
+        // Hàm Đẩy dữ liệu cập nhật trạng thái "revoked" lên Đám mây
+        async function revokeUser(username) {
+            if (confirm(`⚠️ HỦY KHÓA HỌC CỦA SINH VIÊN: ${username}?`)) {
+                await db.collection("users").doc(username).update({
+                    status: 'revoked'
+                });
             }
         }
     </script>
+</body>
+</html>
 </body>
 </html>
