@@ -1363,7 +1363,212 @@
             <button type="button" class="submit-btn" onclick="submitExam('de-6')">NỘP BÀI & XEM ĐIỂM ĐỀ 6</button>
             <div class="result-box"></div>
         </div>
+        <!-- ĐỀ SỐ 7 -->
+        <div id="de-7" class="exam-data" style="display: none;">
+            <div class="exam-info">
+                <strong>📋 Cấu trúc Đề 7 (Trọng điểm Fourier & Quét sạch Chương 1):</strong><br>
+                - <strong>Câu 1-5:</strong> Chuyên đề Chuỗi Fourier (Chu kỳ $2\pi$, Chu kỳ $2l$, Định lý Dirichlet, Thác triển).<br>
+                - <strong>Câu 6-10:</strong> Quét các dạng Khai triển Taylor/Maclaurin hàm phân thức, logarit và miền hội tụ phức tạp.<br>
+                - <strong>Câu 11-15:</strong> Chọn nhiều đáp án. Phân tích mệnh đề đúng/sai về lý thuyết Fourier và Chuỗi hàm.<br>
+                - Điểm số: Mỗi câu 2 điểm. Tổng: 30 điểm. Chỉ tập trung Chương 1!<br>
+            </div>
 
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">PHẦN I: TRẮC NGHIỆM 1 LỰA CHỌN</h3>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 1: Cho hàm số \(f(x)\) tuần hoàn chu kì \(2\pi\), được xác định bởi \(f(x) = 0\) nếu \(-\pi \le x < 0\) và \(f(x) = x+1\) nếu \(0 \le x < \pi\). Gọi \(S(x)\) là tổng của chuỗi Fourier của hàm số này. Tính giá trị của \(S(10\pi)\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q1_de7" value="A"> A. \(1\)</label>
+                    <label class="option-label"><input type="radio" name="q1_de7" value="B"> B. \(1/2\)</label>
+                    <label class="option-label"><input type="radio" name="q1_de7" value="C"> C. \(0\)</label>
+                    <label class="option-label"><input type="radio" name="q1_de7" value="D"> D. \(\pi/2\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Do hàm số tuần hoàn chu kỳ \(2\pi\) nên \(S(10\pi) = S(0)\). Tại \(x=0\), hàm số bị gián đoạn (giới hạn trái bằng 0, giới hạn phải bằng 1). Theo định lý Dirichlet, tổng chuỗi Fourier tại điểm gián đoạn bằng trung bình cộng hai giới hạn: \(S(0) = \frac{f(0^-) + f(0^+)}{2} = \frac{0 + 1}{2} = \frac{1}{2}\). [Trích Bài 11 - BTTK MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 2: Khai triển hàm số \(f(x) = |x|\) với \(x \in (-1, 1)\) thành chuỗi Fourier (chu kỳ \(T=2\)). Hệ số \(a_0\) của chuỗi Fourier này bằng bao nhiêu?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q2_de7" value="A"> A. \(0\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de7" value="B"> B. \(1/2\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de7" value="C"> C. \(2\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de7" value="D"> D. \(1\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Chu kỳ \(2l = 2 \Rightarrow l = 1\). Vì \(f(x) = |x|\) là hàm chẵn trên \((-1, 1)\) nên công thức tính \(a_0 = \frac{2}{l} \int_0^l f(x)dx\). Thay \(l=1\), ta có \(a_0 = \frac{2}{1} \int_0^1 x dx = 2 \left[ \frac{x^2}{2} \right]_0^1 = 1\). [Trích form Bài 12 - BTTK MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 3: Cho hàm số \(f(x) = x\) với \(0 < x < \pi\). Khai triển hàm số này thành chuỗi Fourier chỉ chứa các hàm \(\cos\) (Thác triển chẵn). Mệnh đề nào sau đây ĐÚNG về hệ số \(a_n\) (\(n \ge 1\))?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q3_de7" value="A"> A. \(a_n = \frac{2((-1)^n - 1)}{\pi n^2}\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de7" value="B"> B. \(a_n = \frac{4(-1)^n}{\pi n^2}\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de7" value="C"> C. \(a_n = \frac{2(-1)^{n+1}}{n}\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de7" value="D"> D. \(a_n = 0\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Thác triển chẵn nên \(b_n = 0\). \(a_n = \frac{2}{\pi} \int_0^\pi x \cos(nx) dx\). Dùng tích phân từng phần: \(u=x, dv=\cos(nx)dx\). Ta được \(a_n = \frac{2}{\pi} \left[ \frac{x \sin(nx)}{n} \Big|_0^\pi - \int_0^\pi \frac{\sin(nx)}{n} dx \right] = \frac{2}{\pi} \left[ 0 + \frac{\cos(nx)}{n^2} \Big|_0^\pi \right] = \frac{2(\cos(n\pi) - 1)}{\pi n^2} = \frac{2((-1)^n - 1)}{\pi n^2}\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 4: Khai triển hàm số \(y = \ln(1 + x - 2x^2)\) thành chuỗi Maclaurin. Hệ số của \(x^n\) (với \(n \ge 1\)) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q4_de7" value="A"> A. \(\frac{(-1)^{n-1} 2^n - 1}{n}\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de7" value="B"> B. \(\frac{(-2)^n + 1}{n}\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de7" value="C"> C. \(\frac{(-1)^{n-1} 2^n - 1}{n}\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de7" value="D"> D. \(\frac{(-1)^n 2^n - 1}{n}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Phân tích nhân tử: \(1 + x - 2x^2 = (1-x)(1+2x)\). Vậy \(y = \ln(1-x) + \ln(1+2x)\). <br>Sử dụng khai triển chuẩn: \(\ln(1+u) = \sum_{n=1}^\infty \frac{(-1)^{n-1}}{n} u^n\). <br>- Với \(\ln(1-x)\), thay \(u = -x\), hệ số là \(\frac{-1}{n}\). <br>- Với \(\ln(1+2x)\), thay \(u = 2x\), hệ số là \(\frac{(-1)^{n-1} 2^n}{n}\). <br>Cộng 2 hệ số lại ta được: \(\frac{(-1)^{n-1} 2^n - 1}{n}\). [Trích Bài 8e - BTTK]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 5: Tìm miền hội tụ của chuỗi hàm số \(\sum_{n=1}^{\infty} \frac{1}{n^2} \left(\frac{x-1}{x+1}\right)^n\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q5_de7" value="A"> A. \((-1, +\infty)\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de7" value="B"> B. \((0, +\infty)\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de7" value="C"> C. \((-\infty, 0)\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de7" value="D"> D. \([0, +\infty)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Đặt \(X = \frac{x-1}{x+1}\). Chuỗi \(\sum \frac{1}{n^2} X^n\) có bán kính \(R=1\). Miền hội tụ theo \(X\) là \([-1, 1]\) (vì tại \(X=\pm 1\) chuỗi thành \(\sum \frac{1}{n^2}\) và \(\sum \frac{(-1)^n}{n^2}\) đều hội tụ). <br>Giải \(-1 \le \frac{x-1}{x+1} \le 1\): <br>- \(\frac{x-1}{x+1} \le 1 \Rightarrow \frac{-2}{x+1} \le 0 \Rightarrow x > -1\). <br>- \(\frac{x-1}{x+1} \ge -1 \Rightarrow \frac{2x}{x+1} \ge 0\). Kết hợp với \(x > -1\) ta được \(x \ge 0\). Vậy miền HT là \([0, +\infty)\). [Trích Bài 6b - BTTK]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 6: Khai triển hàm số \(y = \frac{1}{2x+3}\) thành chuỗi Taylor trong lân cận điểm \(x_0 = 4\). Chuỗi thu được có dạng \(\sum_{n=0}^{\infty} a_n (x-4)^n\). Hệ số \(a_n\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q6_de7" value="A"> A. \(\frac{(-1)^n 2^n}{11^n}\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de7" value="B"> B. \(\frac{(-1)^n 2^n}{11^{n+1}}\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de7" value="C"> C. \(\frac{2^n}{11^{n+1}}\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de7" value="D"> D. \(\frac{(-1)^n 2^{n+1}}{11^n}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Đặt \(t = x-4 \Rightarrow x = t+4\). Hàm số trở thành \(y = \frac{1}{2(t+4)+3} = \frac{1}{2t+11} = \frac{1}{11(1 + 2t/11)}\). Sử dụng khai triển \(\frac{1}{1+u} = \sum (-1)^n u^n\) với \(u = \frac{2t}{11}\), ta có: \(y = \frac{1}{11} \sum_{n=0}^\infty (-1)^n \left(\frac{2t}{11}\right)^n = \sum_{n=0}^\infty \frac{(-1)^n 2^n}{11^{n+1}} t^n\). Thay \(t = x-4\) là ra đáp án. [Trích Bài 9a - BTTK]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 7: Tính tổng của chuỗi số \(S = \sum_{n=1}^{\infty} \frac{x^{n+1}}{n(n+1)}\) với \(x \in (-1, 1)\) và \(x \neq 0\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q7_de7" value="A"> A. \(-\ln(1-x)\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de7" value="B"> B. \((1-x)\ln(1-x) - x\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de7" value="C"> C. \(x + (1-x)\ln(1-x)\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de7" value="D"> D. \(x - (1-x)\ln(1-x)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Đạo hàm hai lần: \(S'(x) = \sum_{n=1}^\infty \frac{x^n}{n} = -\ln(1-x)\). Tích phân để tìm lại \(S(x)\): \(\int -\ln(1-x)dx\). Dùng tích phân từng phần (\(u = -\ln(1-x), dv = dx\)), ta được \(x(-\ln(1-x)) - \int \frac{x}{1-x}dx\). Biến đổi \(\frac{x}{1-x} = -1 + \frac{1}{1-x}\), tích phân lên ra \(-x - \ln(1-x)\). Gộp lại: \(-x\ln(1-x) + x + \ln(1-x) = x + (1-x)\ln(1-x)\). Thay \(x=0 \Rightarrow S(0)=0\) khớp với hằng số \(C=0\). [Trích Bài 7c - BTTK]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 8: Cho hàm số \(f(x) = 10 - x\) với \(x \in (5, 15)\). Khai triển hàm này thành chuỗi Fourier. Chu kỳ \(2l\) bằng bao nhiêu và hàm này có tính chất gì đặc biệt quanh trung điểm chu kỳ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q8_de7" value="A"> A. \(2l = 20\), hàm số là hàm lẻ.</label>
+                    <label class="option-label"><input type="radio" name="q8_de7" value="B"> B. \(2l = 10\), hàm số là hàm chẵn.</label>
+                    <label class="option-label"><input type="radio" name="q8_de7" value="C"> C. \(2l = 20\), hàm số là hàm chẵn.</label>
+                    <label class="option-label"><input type="radio" name="q8_de7" value="D"> D. \(2l = 10\), đồ thị có tâm đối xứng là điểm \((10, 0)\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Chiều dài đoạn \((5, 15)\) là \(15 - 5 = 10 \Rightarrow 2l = 10 \Rightarrow l=5\). Phương trình \(y = 10 - x\) đi qua điểm \((10, 0)\). Trên đoạn từ 5 đến 15, khoảng cách từ 10 ra 2 phía là đối xứng, và \(f(10-t) = 10 - (10-t) = t\); \(f(10+t) = 10 - (10+t) = -t\). Tức là \(f(10-t) = -f(10+t)\). Đây là tính chất đối xứng lẻ qua điểm \((10, 0)\), giúp hệ số \(a_0 = 0\) và đơn giản hóa việc tính tích phân. [Trích form Bài 13c - BTTK]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 9: Hàm số \(f(x) = \frac{1}{\sqrt{4-x^2}}\) có bán kính hội tụ \(R\) của chuỗi Maclaurin là bao nhiêu?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q9_de7" value="A"> A. \(R = 1\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de7" value="B"> B. \(R = 2\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de7" value="C"> C. \(R = 4\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de7" value="D"> D. \(R = +\infty\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Biến đổi hàm số: \(f(x) = \frac{1}{2\sqrt{1 - (x/2)^2}} = \frac{1}{2} \left[ 1 + \left(-\frac{x^2}{4}\right) \right]^{-1/2}\). Sử dụng khai triển nhị thức Newton \((1+u)^\alpha\), miền hội tụ của khai triển này là \(|u| < 1\). Suy ra \(\left| -\frac{x^2}{4} \right| < 1 \Rightarrow x^2 < 4 \Rightarrow |x| < 2\). Vậy bán kính hội tụ \(R = 2\). [Trích Bài 8c - BTTK]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 10: Từ khai triển Fourier của hàm \(f(x) = x^2\) trên \((-\pi, \pi)\) là: \(x^2 = \frac{\pi^2}{3} + 4 \sum_{n=1}^{\infty} \frac{(-1)^n}{n^2} \cos(nx)\). Thay \(x = \pi\) vào hai vế, ta tính được tổng của chuỗi số \(\sum_{n=1}^{\infty} \frac{1}{n^2}\) bằng:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q10_de7" value="A"> A. \(\pi^2 / 8\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de7" value="B"> B. \(\pi^2 / 12\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de7" value="C"> C. \(\pi^2 / 6\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de7" value="D"> D. \(\pi^2 / 3\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Tại \(x = \pi\) (mút của chu kỳ), theo định lý Dirichlet tổng chuỗi bằng \(\frac{f(-\pi^+) + f(\pi^-)}{2} = \frac{\pi^2 + \pi^2}{2} = \pi^2\). <br>Thay \(x = \pi\) vào chuỗi: \(\cos(n\pi) = (-1)^n\). Ta có: \(\pi^2 = \frac{\pi^2}{3} + 4 \sum \frac{(-1)^n (-1)^n}{n^2} = \frac{\pi^2}{3} + 4 \sum \frac{1}{n^2}\). <br>Suy ra \(4 \sum \frac{1}{n^2} = \pi^2 - \frac{\pi^2}{3} = \frac{2\pi^2}{3} \Rightarrow \sum \frac{1}{n^2} = \frac{\pi^2}{6}\). [Ứng dụng quen thuộc của Fourier Chương 1]</div>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem;">PHẦN II: TRẮC NGHIỆM NHIỀU LỰA CHỌN</h3>
+            <p style="color: #ef4444; font-style: italic;">* Chú ý: Chọn TẤT CẢ các mệnh đề đúng. Sai/Thiếu 1 ý là 0 điểm.</p>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C">
+                <div class="question-text">Câu 11: Liên quan đến định lý Dirichlet và Chuỗi Fourier, chọn các mệnh đề <strong>ĐÚNG</strong>: <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q11_de7" value="A"> A. Nếu hàm \(f(x)\) thỏa mãn định lý Dirichlet thì tại điểm liên tục \(x_0\), chuỗi Fourier hội tụ chính xác về \(f(x_0)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de7" value="B"> B. Nếu khai triển Fourier một hàm \(f(x)\) tuần hoàn chu kỳ \(2l\) thì công thức hệ số là \(a_n = \frac{1}{l} \int_{-l}^{l} f(x) \cos\left(\frac{n\pi x}{l}\right) dx\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de7" value="C"> C. Thác triển chẵn một hàm số xác định trên \((0, l)\) sẽ tạo ra một chuỗi Fourier chỉ chứa các số hạng \(\cos\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de7" value="D"> D. Nếu \(f(x)\) là hàm lẻ trên \((-\pi, \pi)\), hệ số \(a_0\) có thể khác 0 tùy vào giá trị của \(f(0)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de7" value="E"> E. Chuỗi Fourier của một hàm số bất kỳ luôn luôn hội tụ đều trên toàn trục số thực \(\mathbb{R}\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C</strong>.<br>
+                - A đúng theo phát biểu chuẩn của Định lý Dirichlet.<br>
+                - B đúng, đây là công thức Fourier mở rộng cho chu kỳ \(T = 2l\).<br>
+                - C đúng, thác triển chẵn làm hàm trở thành hàm chẵn \(\Rightarrow b_n = 0\), chỉ còn \(\cos\).<br>
+                - D sai, nếu \(f(x)\) lẻ thì tích phân trên miền đối xứng \((-\pi, \pi)\) của \(f(x)dx\) luôn bằng 0, do đó \(a_0\) bắt buộc phải bằng 0.<br>
+                - E sai, chuỗi Fourier chỉ hội tụ đều nếu hàm \(f(x)\) liên tục trên toàn \(\mathbb{R}\). Nếu có điểm gián đoạn, nó không thể hội tụ đều (hiện tượng Gibbs).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="B,C,E">
+                <div class="question-text">Câu 12: Đánh giá miền hội tụ của các chuỗi hàm số sau. Các khẳng định nào là <strong>ĐÚNG</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q12_de7" value="A"> A. Chuỗi \(\sum_{n=1}^\infty \frac{x^n}{n!}\) chỉ hội tụ trên \((-1, 1)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de7" value="B"> B. Chuỗi \(\sum_{n=1}^\infty x^n\) hội tụ trên khoảng \((-1, 1)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de7" value="C"> C. Chuỗi \(\sum_{n=1}^\infty \frac{x^n}{n}\) hội tụ trên nửa khoảng \([-1, 1)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de7" value="D"> D. Chuỗi \(\sum_{n=1}^\infty \frac{x^n}{n^2+1}\) phân kỳ tại \(x=1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de7" value="E"> E. Chuỗi \(\sum_{n=1}^\infty \frac{(x-1)^n}{n \cdot 2^n}\) có bán kính hội tụ \(R = 2\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>B, C, E</strong>.<br>
+                - A sai: Khai triển của \(e^x\) có \(R = +\infty\), hội tụ trên toàn \(\mathbb{R}\).<br>
+                - B đúng: Chuỗi hình học hội tụ khi \(|x| < 1\).<br>
+                - C đúng: Tại \(x=1\) ra chuỗi điều hòa phân kỳ, tại \(x=-1\) ra chuỗi đan dấu hội tụ.<br>
+                - D sai: Tại \(x=1\), chuỗi là \(\sum \frac{1}{n^2+1} \sim \frac{1}{n^2}\) hội tụ.<br>
+                - E đúng: Dùng D'Alembert \(\lim \frac{a_{n+1}}{a_n} = \frac{1}{2} \Rightarrow R = 2\). [Ôn tập lý thuyết Chuỗi lũy thừa]</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,C,D">
+                <div class="question-text">Câu 13: Xét chuỗi số \(S = \sum_{n=2}^{\infty} \frac{(-1)^n}{\ln^2 n \cdot \cos(n\pi)}\). Chọn các đánh giá <strong>ĐÚNG</strong>: <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q13_de7" value="A"> A. Biểu thức của chuỗi có thể rút gọn thành chuỗi dương: \(\sum_{n=2}^{\infty} \frac{1}{\ln^2 n}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de7" value="B"> B. Chuỗi đã cho là một chuỗi đan dấu thỏa mãn điều kiện Leibniz.</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de7" value="C"> C. Chuỗi đã cho là một chuỗi phân kỳ.</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de7" value="D"> D. Nếu thay \(\ln^2 n\) dưới mẫu bằng \(n^2\), chuỗi sẽ hội tụ tuyệt đối.</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de7" value="E"> E. Chuỗi đã cho là chuỗi bán hội tụ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, C, D</strong>.<br>
+                - Nhận xét cực kỳ quan trọng: \(\cos(n\pi) = (-1)^n\). Do đó số hạng tổng quát là \(\frac{(-1)^n}{(-1)^n \ln^2 n} = \frac{1}{\ln^2 n}\). Vậy đây bản chất là CHUỖI DƯƠNG (Ý A đúng, B sai).<br>
+                - Vì \(n > \ln^2 n \Rightarrow \frac{1}{\ln^2 n} > \frac{1}{n}\). Mà chuỗi \(1/n\) phân kỳ nên chuỗi này Phân kỳ (Ý C đúng, Ý E sai).<br>
+                - Nếu thay bằng \(n^2\), ta có \(\sum \frac{1}{n^2}\) là chuỗi Riemann \(\alpha=2\) hội tụ, vì là chuỗi dương nên nó HT tuyệt đối (Ý D đúng). [Câu hỏi bẫy kinh điển]</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="B,D">
+                <div class="question-text">Câu 14: Về các hàm số sơ cấp cơ bản và khai triển Maclaurin, mệnh đề nào <strong>ĐÚNG</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q14_de7" value="A"> A. \(\sin x = \sum_{n=0}^{\infty} \frac{(-1)^n}{(2n)!} x^{2n}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de7" value="B"> B. \(\cos x = \sum_{n=0}^{\infty} \frac{(-1)^n}{(2n)!} x^{2n}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de7" value="C"> C. \(\frac{1}{1+x} = \sum_{n=0}^{\infty} x^n\) với \(|x| < 1\)</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de7" value="D"> D. \((1+x)^\alpha = 1 + \sum_{n=1}^\infty \frac{\alpha(\alpha-1)...(\alpha-n+1)}{n!} x^n\)</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de7" value="E"> E. \(\ln(1-x) = \sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n} x^n\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>B, D</strong>.<br>
+                - A sai: Đó là khai triển của \(\cos x\). \(\sin x\) dùng bậc lẻ \((2n+1)\).<br>
+                - B đúng.<br>
+                - C sai: Phải là \(\sum (-1)^n x^n\).<br>
+                - D đúng: Đây là khai triển Nhị thức Newton tổng quát.<br>
+                - E sai: \(\ln(1-x) = -\sum \frac{x^n}{n}\). Công thức ở ý E là của \(\ln(1+x)\).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,D">
+                <div class="question-text">Câu 15: Xét chuỗi số \(S = \sum_{n=1}^{\infty} \frac{(3n+1)!}{n^2 \cdot 8^n}\). Khẳng định nào sau đây là <strong>ĐÚNG</strong>? <span class="multi-choice-badge">4 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q15_de7" value="A"> A. Áp dụng tiêu chuẩn D'Alembert, giới hạn \(L = +\infty\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de7" value="B"> B. Áp dụng tiêu chuẩn D'Alembert, giới hạn \(L = 3/8\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de7" value="C"> C. Chuỗi hội tụ vì mẫu số tăng nhanh hơn tử số.</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de7" value="D"> D. Chuỗi phân kỳ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, D</strong>.<br>
+                Tính \(L = \lim \frac{a_{n+1}}{a_n} = \lim \frac{(3n+4)!}{(n+1)^2 \cdot 8^{n+1}} \cdot \frac{n^2 \cdot 8^n}{(3n+1)!} = \lim \frac{(3n+2)(3n+3)(3n+4) \cdot n^2}{8(n+1)^2} = +\infty\). <br>Vì \(L > 1\) nên chuỗi chắc chắn Phân kỳ. (Tử số là Giai thừa, mạnh hơn rất nhiều so với lũy thừa 8 ở mẫu). [Trích Bài 2i - BTTK]</div>
+            </div>
+
+            <button type="button" class="submit-btn" onclick="submitExam('de-7')">NỘP BÀI & XEM ĐIỂM ĐỀ 7</button>
+            <div class="result-box"></div>
+        </div>
 <!-- ================= CHỖ ĐỂ BẠN DÁN CÁC ĐỀ TIẾP THEO ================= -->
     </div>
 
