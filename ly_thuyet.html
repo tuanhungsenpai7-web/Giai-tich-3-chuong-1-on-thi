@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <!-- ================= SCRIPT BẢO VỆ TRANG ================= -->
+    <script>
+        // Lính gác: Kiểm tra xem bộ nhớ trình duyệt có vé thông hành (isLoggedIn) hay không
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            alert("⛔ CẢNH BÁO BẢO MẬT: Bạn chưa đăng nhập hoặc tài khoản chưa được duyệt! Hệ thống sẽ chuyển hướng bạn về trang chủ.");
+            // Đá người dùng về lại trang index.html
+            window.location.href = 'index.html'; 
+        }
+    </script>
+    <!-- ======================================================= -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lý Thuyết Giải Tích 3 - TuanHungDJ</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --step-color: #0284c7;
+            --casio-color: #334155;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        /* Navigation Bar mô phỏng 3 trang */
+        nav {
+            background-color: #0f172a;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        nav a.active { background-color: var(--primary-color); }
+        nav a:hover { background-color: #3b82f6; }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Bài học */
+        .lesson {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .lesson-header {
+            background-color: #f1f5f9;
+            padding: 1rem 1.5rem;
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #0f172a;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .lesson-body { padding: 1.5rem; }
+        
+        h3 { color: var(--primary-color); font-size: 1.2rem; border-bottom: 2px solid #bfdbfe; padding-bottom: 0.5rem; margin-top: 1.5rem;}
+        
+        /* Boxes */
+        .theory-box { background-color: #fffbeb; padding: 1rem; border-radius: 6px; border-left: 4px solid #f59e0b; margin-bottom: 1rem;}
+        .example-box { background-color: #f0fdf4; padding: 1rem; border-radius: 6px; border-left: 4px solid #22c55e; margin: 1rem 0;}
+        .casio-box { background-color: var(--casio-color); color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin: 1rem 0; font-family: monospace; font-size: 1.05rem;}
+        .casio-title { color: #38bdf8; font-weight: bold; margin-bottom: 0.5rem; display: block; font-family: 'Segoe UI', sans-serif;}
+        
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        table, th, td { border: 1px solid #cbd5e1; }
+        th, td { padding: 0.8rem; text-align: left; }
+        th { background-color: #f8fafc; color: var(--primary-color);}
+
+        /* Footer */
+        footer {
+            background-color: #0f172a;
+            color: #f1f5f9;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: auto;
+        }
+        footer h2 { margin: 0 0 0.5rem 0; color: #38bdf8; font-size: 1.5rem;}
+        footer a { color: #7dd3fc; text-decoration: none;}
+    </style>
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <!-- Menu Điều Hướng Giữa 3 Trang -->
+    <nav>
+        <a href="ly_thuyet.html" class="active">📚 Lý Thuyết Chương 1</a>
+        <a href="bai_tap.html" onclick="alert('Hãy lưu file Bài tập vào cùng thư mục để mở nhé!')">✏️ Bài Tập Luyện Tập</a>
+        <a href="luyen_de.html" onclick="alert('Hãy lưu file Luyện đề vào cùng thư mục để mở nhé!')">📝 Luyện Đề Thi</a>
+    </nav>
+
+    <header>
+        <h1>Giải Tích 3 - Lý Thuyết Trọng Tâm Chương 1</h1>
+        <p>Học nhanh, nhớ lâu, bứt phá điểm thi</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- BÀI 1 -->
+        <div class="lesson">
+            <div class="lesson-header">Bài 1: Đại Cương Về Chuỗi Số</div>
+            <div class="lesson-body">
+                <h3>1. Lý thuyết cần nhớ</h3>
+                <div class="theory-box">
+                    <p>- Chuỗi số là tổng vô hạn các số hạng của dãy số: \(\sum_{n=1}^{+\infty} a_n = a_1 + a_2 + ... + a_n + ...\) [1, 2].</p>
+                    <p>- Gọi \(S_n\) là tổng riêng thứ \(n\). Nếu \(\lim_{n \to +\infty} S_n = S\) (hữu hạn) thì chuỗi hội tụ [8, 9].</p>
+                    <p><strong>- Điều kiện cần:</strong> Nếu chuỗi \(\sum a_n\) hội tụ thì \(\lim_{n \to \infty} a_n = 0\). Nếu giới hạn khác 0, chuỗi chắc chắn phân kỳ [10, 11].</p>
+                </div>
+
+                <h3>2. Ví dụ minh họa</h3>
+                <div class="example-box">
+                    <strong>Ví dụ (Dạng phân tích sai phân):</strong> Xét sự hội tụ và tính tổng \(\sum_{n=1}^{\infty} \frac{1}{n(n+2)}\) [12].<br>
+                    <em>Giải:</em> Ta tách \(a_n = \frac{1}{2}(\frac{1}{n} - \frac{1}{n+2})\). <br>
+                    Tổng riêng \(S_n = \frac{1}{2}[(1 - \frac{1}{3}) + (\frac{1}{2} - \frac{1}{4}) + ... + (\frac{1}{n} - \frac{1}{n+2})]\).<br>
+                    Triệt tiêu chéo ta được: \(S_n = \frac{1}{2}(1 + \frac{1}{2} - \frac{1}{n+1} - \frac{1}{n+2})\).<br>
+                    Do đó, \(\lim S_n = \frac{3}{4}\). Chuỗi hội tụ và có tổng là 3/4 [12].
+                </div>
+
+                <h3>3. ⚡ Mẹo Casio Trắc Nghiệm</h3>
+                <div class="casio-box">
+                    <span class="casio-title">Sử dụng CALC kiểm tra "Điều kiện cần" và \(\Sigma\) để tính tổng:</span>
+                    1. Bấm giới hạn: Nhập biểu thức \(a_X\) vào máy, bấm [CALC] với X = 999999. <br>
+                    - Nếu kết quả ra 1 số \(\neq 0\) (vd: 1, 2, -5...) \(\rightarrow\) Chọn ngay đáp án "Phân kỳ".<br>
+                    2. Bấm tính tổng chuỗi: Nhập \(\sum_{X=1}^{100} a_X\) (thay vô cùng bằng 100 hoặc 200). Kết quả xấp xỉ số nào trong đáp án thì chọn số đó. Ví dụ bài trên bấm máy sẽ ra xấp xỉ 0.75 (tức 3/4).
+                </div>
+            </div>
+        </div>
+
+        <!-- BÀI 2 -->
+        <div class="lesson">
+            <div class="lesson-header">Bài 2: Chuỗi Số Dương</div>
+            <div class="lesson-body">
+                <h3>1. Lý thuyết cần nhớ</h3>
+                <div class="theory-box">
+                    <p>- Chuỗi số dương là chuỗi có \(a_n > 0\). Chuỗi mốc Riemann \(\sum \frac{1}{n^\alpha}\) hội tụ khi \(\alpha > 1\), phân kỳ khi \(\alpha \le 1\) [13, 14].</p>
+                    <p><strong>- Tiêu chuẩn D'Alembert:</strong> Đặt \(L = \lim \frac{a_{n+1}}{a_n}\). Dùng khi có Giai thừa (!). Nếu \(L < 1\) hội tụ, \(L > 1\) phân kỳ [15, 16].</p>
+                    <p><strong>- Tiêu chuẩn Cauchy:</strong> Đặt \(L = \lim \sqrt[n]{a_n}\). Dùng khi có Mũ n. \(L < 1\) hội tụ, \(L > 1\) phân kỳ [15, 17].</p>
+                    <p><strong>- Tiêu chuẩn So Sánh 2:</strong> Nếu \(\lim \frac{a_n}{b_n} = K \in (0, +\infty)\), hai chuỗi cùng hội tụ hoặc phân kỳ [18, 19].</p>
+                </div>
+
+                <h3>2. Ví dụ minh họa</h3>
+                <div class="example-box">
+                    <strong>Ví dụ (D'Alembert):</strong> Xét sự hội tụ của \(\sum_{n=1}^{\infty} \frac{2^n}{(n+1)!}\) [4].<br>
+                    <em>Giải:</em> Ta có \(L = \lim \frac{a_{n+1}}{a_n} = \lim \frac{2^{n+1}}{(n+2)!} \cdot \frac{(n+1)!}{2^n} = \lim \frac{2}{n+2} = 0\).<br>
+                    Vì \(L = 0 < 1\), theo D'Alembert chuỗi này hội tụ [4].
+                </div>
+
+                <h3>3. ⚡ Mẹo Casio Trắc Nghiệm</h3>
+                <div class="casio-box">
+                    <span class="casio-title">Tìm L (D'Alembert / Cauchy) cực nhanh không cần nháp:</span>
+                    1. Dùng D'Alembert: Nhập vào máy phân thức \(\frac{a_{X+1}}{a_X}\). Bấm [CALC] X = 50. Nếu máy báo số rất nhỏ (gần 0) \(\rightarrow\) Hội tụ. Nếu máy báo số lớn (hoặc Math Error do quá to) \(\rightarrow\) Phân kỳ.<br>
+                    2. Dùng So sánh giới hạn: Nhập vào máy \(\frac{a_X}{b_X}\) (với \(b_X\) là chuỗi bạn nhẩm được bậc lớn nhất). [CALC] X = 99999. Nếu ra số hữu hạn khác 0, hai chuỗi có cùng tính chất.
+                </div>
+            </div>
+        </div>
+
+        <!-- BÀI 3 -->
+        <div class="lesson">
+            <div class="lesson-header">Bài 3: Chuỗi Đan Dấu & Có Dấu Bất Kỳ</div>
+            <div class="lesson-body">
+                <h3>1. Lý thuyết cần nhớ</h3>
+                <div class="theory-box">
+                    <p><strong>- Hội tụ tuyệt đối (HTTĐ):</strong> \(\sum a_n\) HTTĐ nếu \(\sum |a_n|\) hội tụ [20, 21]. (Chú ý: HTTĐ thì chắc chắn hội tụ [22]).</p>
+                    <p><strong>- Bán hội tụ (BHT):</strong> Chuỗi gốc \(\sum a_n\) hội tụ, nhưng chuỗi trị tuyệt đối \(\sum |a_n|\) phân kỳ [21, 23].</p>
+                    <p><strong>- Tiêu chuẩn Leibniz (cho chuỗi đan dấu):</strong> \(\sum (-1)^n a_n\). Điều kiện để hội tụ: Dãy \(a_n\) dương, giảm dần và \(\lim a_n = 0\) [24, 25].</p>
+                </div>
+
+                <h3>2. Ví dụ minh họa</h3>
+                <div class="example-box">
+                    <strong>Ví dụ (Xét Bán Hội Tụ):</strong> Xét chuỗi \(\sum_{n=1}^{\infty} \frac{(-1)^n}{n}\) [23, 26].<br>
+                    <em>Giải:</em><br>
+                    - Bước 1: Xét trị tuyệt đối là \(\sum \frac{1}{n}\) (chuỗi điều hòa). Ta biết chuỗi này phân kỳ [23, 26].<br>
+                    - Bước 2: Dùng Leibniz xét chuỗi gốc. Dãy \(a_n = \frac{1}{n}\) rõ ràng giảm và \(\lim \frac{1}{n} = 0\) [26, 27]. Do đó chuỗi gốc hội tụ.<br>
+                    Kết luận: Chuỗi bán hội tụ [23, 26].
+                </div>
+
+                <h3>3. ⚡ Mẹo Casio Trắc Nghiệm</h3>
+                <div class="casio-box">
+                    <span class="casio-title">Dùng TABLE (Mode 8) để kiểm tra tính giảm của Leibniz:</span>
+                    1. Vào Menu 8 (Table). Nhập hàm \(f(x)\) là phần bỏ dấu \((-1)^n\) (Ví dụ: \(f(x) = \frac{\ln(x)}{x}\)).<br>
+                    2. Start = 1, End = 20, Step = 1.<br>
+                    3. Nhìn cột \(f(x)\). Nếu từ một giá trị \(x\) nào đó trở đi mà các số cứ nhỏ dần đều \(\rightarrow\) Dãy giảm (Thỏa mãn Leibniz).<br>
+                    4. Kết hợp nhẩm \(\lim = 0\) \(\rightarrow\) Suy ra ngay chuỗi hội tụ.
+                </div>
+            </div>
+        </div>
+
+        <!-- BÀI 4 -->
+        <div class="lesson">
+            <div class="lesson-header">Bài 4: Chuỗi Lũy Thừa & Khai Triển Maclaurin</div>
+            <div class="lesson-body">
+                <h3>1. Lý thuyết cần nhớ</h3>
+                <div class="theory-box">
+                    <p>- Bán kính hội tụ: \(R = \lim |\frac{a_n}{a_{n+1}}|\) hoặc \(R = \frac{1}{\lim \sqrt[n]{|a_n|}}\) [28, 29]. Miền hội tụ là \((-R, R)\). Luôn nhớ phải xét riêng 2 đầu mút x = R và x = -R [30, 31].</p>
+                    <p>- <strong>Bảng Maclaurin quan trọng [32, 33]:</strong></p>
+                    <ul>
+                        <li>\(e^x = \sum_{n=0}^\infty \frac{x^n}{n!}\) (Mọi \(x\)) [32, 34]</li>
+                        <li>\(\frac{1}{1-x} = \sum_{n=0}^\infty x^n\) (với \(|x| < 1\)) [32, 35]</li>
+                        <li>\(\sin x = \sum_{n=1}^\infty (-1)^{n-1}\frac{x^{2n-1}}{(2n-1)!}\) [32, 36]</li>
+                        <li>\(\ln(1+x) = \sum_{n=1}^\infty (-1)^{n-1}\frac{x^n}{n}\) [32, 36]</li>
+                    </ul>
+                </div>
+
+                <h3>2. Ví dụ minh họa</h3>
+                <div class="example-box">
+                    <strong>Ví dụ (Tìm miền hội tụ):</strong> \(\sum_{n=1}^{\infty} \frac{x^n}{(n+2)3^n}\) [6].<br>
+                    <em>Giải:</em> Ta có \(a_n = \frac{1}{(n+2)3^n}\). \(\rho = \lim |\frac{a_{n+1}}{a_n}| = \lim \frac{n+2}{3(n+3)} = \frac{1}{3}\) \(\Rightarrow\) Bán kính \(R = 3\). Khoảng là \((-3, 3)\) [6].<br>
+                    - Tại \(x = 3\), chuỗi trở thành \(\sum \frac{1}{n+2}\) (Phân kỳ).<br>
+                    - Tại \(x = -3\), chuỗi là \(\sum \frac{(-1)^n}{n+2}\) (Hội tụ theo Leibniz) [6, 37].<br>
+                    Miền hội tụ: \([-3, 3)\) [37].
+                </div>
+
+                <h3>3. ⚡ Mẹo Casio Trắc Nghiệm</h3>
+                <div class="casio-box">
+                    <span class="casio-title">Mẹo thử nhanh đáp án Miền Hội Tụ:</span>
+                    Bài trắc nghiệm thường cho 4 đáp án dạng miền: A. (-2, 2); B. [-2, 2); C. [-2, 2]; D. (-2, 2].<br>
+                    => Lấy ngay giá trị mút là x = 2 và x = -2 thế vào chuỗi đề bài.<br>
+                    - Dùng \(\Sigma\) (từ 1 đến 50) với x vừa thế. Nếu ra số hữu hạn -> nhận dấu ngoặc vuông "[]". Nếu máy ra số cực lớn hoặc báo lỗi \(\rightarrow\) loại dấu vuông, dùng ngoặc tròn "()".
+                </div>
+            </div>
+        </div>
+
+        <!-- BÀI 5 -->
+        <div class="lesson">
+            <div class="lesson-header">Bài 5: Chuỗi Fourier</div>
+            <div class="lesson-body">
+                <h3>1. Lý thuyết cần nhớ</h3>
+                <div class="theory-box">
+                    <p>- Công thức hệ số Euler-Fourier trên \([-\pi, \pi]\):<br>
+                    \(a_0 = \frac{1}{\pi} \int_{-\pi}^{\pi} f(x)dx\) ; \(a_n = \frac{1}{\pi} \int_{-\pi}^{\pi} f(x)\cos(nx)dx\) ; \(b_n = \frac{1}{\pi} \int_{-\pi}^{\pi} f(x)\sin(nx)dx\) [38-44].</p>
+                    <p>- <strong>Hàm Chẵn/Lẻ:</strong><br>
+                    + Hàm CHẴN: \(b_n = 0\), chuỗi chỉ có hàm cos [45, 46].<br>
+                    + Hàm LẺ: \(a_0 = a_n = 0\), chuỗi chỉ có hàm sin [45, 47].</p>
+                    <p>- Định lý Dirichlet: Tại điểm gián đoạn \(x=c\), tổng chuỗi \(S(c) = \frac{f(c^+) + f(c^-)}{2}\) [48, 49].</p>
+                </div>
+
+                <h3>2. Ví dụ minh họa</h3>
+                <div class="example-box">
+                    <strong>Ví dụ (Khai triển hàm chẵn):</strong> \(f(x) = |x|\) trên \((-\pi, \pi]\) [7, 50].<br>
+                    <em>Giải:</em> Đây là hàm chẵn \(\Rightarrow b_n = 0\) [7, 50].<br>
+                    \(a_0 = \frac{2}{\pi} \int_0^\pi x dx = \pi\) [7, 50].<br>
+                    \(a_n = \frac{2}{\pi} \int_0^\pi x \cos(nx) dx = \frac{2}{n^2\pi}((-1)^n - 1)\) [7, 50].<br>
+                    Chuỗi Fourier: \(f(x) = \frac{\pi}{2} + \sum_{n=1}^\infty \frac{2}{n^2\pi}((-1)^n - 1)\cos(nx)\) [7, 50].
+                </div>
+
+                <h3>3. ⚡ Mẹo Casio Trắc Nghiệm</h3>
+                <div class="casio-box">
+                    <span class="casio-title">Mẹo "bấm máy tích phân" chọn ngay Hệ số:</span>
+                    Đề hỏi hệ số \(a_0\) hoặc \(a_n\)?<br>
+                    1. <strong>CHUYỂN MÁY SANG RADIAN (Shift Menu -> Angle Unit -> Radian).</strong> (Rất nhiều bạn sai bước này).<br>
+                    2. Bấm trực tiếp tích phân \(\frac{1}{\pi} \int_{-\pi}^{\pi} f(x) \cos(1 \cdot x) dx\) để tìm \(a_1\).<br>
+                    3. Đối chiếu \(a_1\) vừa tính với 4 đáp án (bằng cách thay n=1 vào đáp án). Đáp án nào khớp thì khoanh!
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <h2>TuanHungDJ - Math & Code</h2>
+        <p>Email thắc mắc: <a href="mailto:tuanhungsenpai7@gmail.com">tuanhungsenpai7@gmail.com</a></p>
+        <p>© 2026 Bản quyền thuộc về TuanHungDJ. Hệ thống ôn luyện Giải tích 3.</p>
+    </footer>
+    <nav>
+        <a href="ly_thuyet.html">📚 Lý Thuyết Chương 1</a>
+        <a href="bai_tap.html">✏️ Bài Tập Luyện Tập</a>
+        <a href="luyen_de.html" class="active">📝 Luyện Đề Thi</a>
+        
+        <!-- Nút Đăng xuất được đẩy sang góc phải -->
+        <a href="#" onclick="logout()" style="float: right; background-color: #ef4444; color: white;">🚪 Đăng xuất</a>
+    </nav>
+    <script>
+        // Hàm xử lý đăng xuất
+        function logout() {
+            const confirmLogout = confirm("Bạn có chắc chắn muốn thoát khỏi hệ thống ôn tập Giải tích 3?");
+            if (confirmLogout) {
+                // Xóa toàn bộ vé thông hành trong bộ nhớ tạm
+                sessionStorage.removeItem('isLoggedIn');
+                sessionStorage.removeItem('currentUser');
+                
+                // Đưa về trang đăng nhập
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

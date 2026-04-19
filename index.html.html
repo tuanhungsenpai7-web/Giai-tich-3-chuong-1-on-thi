@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Học Tập Giải Tích 3 - TuanHungDJ</title>
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .auth-container { background: white; color: var(--text); padding: 2rem 3rem; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 400px; }
+        .logo { text-align: center; margin-bottom: 1.5rem; }
+        .logo h1 { color: var(--primary); margin: 0; font-size: 1.8rem; }
+        .logo p { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; }
+        
+        .btn { width: 100%; padding: 12px; background-color: var(--primary); color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+        .btn:hover { background-color: #1d4ed8; }
+        
+        .toggle-text { text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #475569; }
+        .toggle-text span { color: var(--primary); cursor: pointer; font-weight: bold; }
+        
+        #message { text-align: center; margin-top: 1rem; font-weight: bold; font-size: 0.9rem; }
+        .error { color: #ef4444; }
+        .success { color: #22c55e; }
+        .warning { color: #f59e0b; }
+
+        /* Admin Panel Styles */
+        .admin-btn { display: block; text-align: center; margin-top: 2rem; color: #94a3b8; font-size: 0.8rem; cursor: pointer; text-decoration: underline; transition: 0.3s;}
+        .admin-btn:hover { color: #f59e0b; }
+        
+        /* Box Xác thực PIN */
+        #adminAuth { display: none; background: #1e293b; padding: 1.5rem; border-radius: 8px; margin-top: 1.5rem; text-align: center; border: 2px solid #f59e0b;}
+        #adminAuth input { width: 100%; padding: 10px; margin: 10px 0; text-align: center; font-size: 1.2rem; letter-spacing: 5px; border-radius: 4px; border: none; outline: none;}
+        #adminAuth button { width: 100%; padding: 10px; background: #f59e0b; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.3s;}
+        #adminAuth button:hover { background: #d97706; }
+        
+        /* Bảng điều khiển Admin */
+        #adminPanel { display: none; background: #334155; padding: 1rem; border-radius: 8px; margin-top: 1rem; border: 2px solid #22c55e; max-height: 400px; overflow-y: auto;}
+        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #475569; font-size: 0.85rem;}
+        
+        .approve-btn { background: #22c55e; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: bold;}
+        .approve-btn:hover { background: #16a34a; }
+        
+        .revoke-btn { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: bold;}
+        .revoke-btn:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="logo">
+            <h1>TuanHungDJ</h1>
+            <p>Hệ thống tự học Giải Tích 3 Độc Quyền</p>
+        </div>
+
+        <!-- FORM ĐĂNG NHẬP -->
+        <div id="loginForm">
+            <h2 style="text-align: center; margin-top: 0;">ĐĂNG NHẬP</h2>
+            <div class="form-group">
+                <label>Tên đăng nhập (Mã SV)</label>
+                <input type="text" id="loginUsername" placeholder="Nhập mã sinh viên...">
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <input type="password" id="loginPassword" placeholder="Nhập mật khẩu...">
+            </div>
+            <button class="btn" onclick="handleLogin()">VÀO HỌC NGAY</button>
+            <div class="toggle-text">Chưa có tài khoản? <span onclick="toggleForm('register')">Đăng ký ngay</span></div>
+        </div>
+
+        <!-- FORM ĐĂNG KÝ -->
+        <div id="registerForm" style="display: none;">
+            <h2 style="text-align: center; margin-top: 0;">ĐĂNG KÝ HỌC</h2>
+            <div class="form-group">
+                <label>Họ và Tên</label>
+                <input type="text" id="regFullName" placeholder="Nhập họ tên...">
+            </div>
+            <div class="form-group">
+                <label>Tên đăng nhập (Mã SV)</label>
+                <input type="text" id="regUsername" placeholder="Nhập mã sinh viên...">
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <input type="password" id="regPassword" placeholder="Tạo mật khẩu...">
+            </div>
+            <button class="btn" onclick="handleRegister()">GỬI DUYỆT TÀI KHOẢN</button>
+            <div class="toggle-text">Đã có tài khoản? <span onclick="toggleForm('login')">Quay lại Đăng nhập</span></div>
+        </div>
+
+        <div id="message"></div>
+
+        <!-- KHU VỰC DÀNH CHO ADMIN -->
+        <span class="admin-btn" onclick="openAdminAuth()">🔧 Khu vực dành cho Admin</span>
+        
+        <!-- Box Xác Thực PIN -->
+        <div id="adminAuth">
+            <h4 style="margin: 0; color: #fcd34d;">🔒 BẢO MẬT ADMIN</h4>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin: 5px 0;">Nhập mã PIN để truy cập hệ thống quản lý.</p>
+            <input type="password" id="adminPinInput" placeholder="••••••" maxlength="6">
+            <button onclick="verifyAdminPin()">XÁC NHẬN</button>
+            <p id="adminErrorMsg" style="color: #ef4444; font-size: 0.85rem; margin-top: 10px; margin-bottom: 0; display: none;"></p>
+        </div>
+
+        <!-- Bảng Quản Lý Của Admin -->
+        <div id="adminPanel">
+            <h4 style="margin-top: 0; color: #4ade80; border-bottom: 1px solid #475569; padding-bottom: 5px;">✅ Danh sách chờ duyệt:</h4>
+            <div id="userList"></div>
+
+            <h4 style="margin-top: 1.5rem; color: #38bdf8; border-bottom: 1px solid #475569; padding-bottom: 5px;">🎓 Học viên đang học:</h4>
+            <div id="approvedList"></div>
+
+            <button onclick="closeAdminPanel()" style="width: 100%; margin-top: 15px; padding: 8px; background: #64748b; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold;">Đóng Admin Panel</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Khởi tạo Database giả lập bằng LocalStorage
+        if (!localStorage.getItem('usersDB')) {
+            localStorage.setItem('usersDB', JSON.stringify({}));
+        }
+
+        // ================= LOGIC SINH VIÊN =================
+        function toggleForm(type) {
+            document.getElementById('message').innerText = "";
+            if (type === 'register') {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+            } else {
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+            }
+        }
+
+        function showMessage(msg, type) {
+            const msgBox = document.getElementById('message');
+            msgBox.innerText = msg;
+            msgBox.className = type;
+        }
+
+        function handleRegister() {
+            const fullname = document.getElementById('regFullName').value;
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!fullname || !username || !password) return showMessage("Vui lòng điền đủ thông tin!", "error");
+
+            let db = JSON.parse(localStorage.getItem('usersDB'));
+            if (db[username]) return showMessage("Mã sinh viên này đã được đăng ký!", "error");
+
+            // Lưu user với trạng thái "pending" (Chờ duyệt)
+            db[username] = { fullname, password, status: 'pending' };
+            localStorage.setItem('usersDB', JSON.stringify(db));
+
+            showMessage("Đăng ký thành công! Vui lòng chờ Admin duyệt để được vào học.", "success");
+            setTimeout(() => toggleForm('login'), 3000);
+        }
+
+        function handleLogin() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) return showMessage("Vui lòng điền đủ thông tin!", "error");
+
+            let db = JSON.parse(localStorage.getItem('usersDB'));
+            let user = db[username];
+
+            if (!user) return showMessage("Tài khoản không tồn tại!", "error");
+            if (user.password !== password) return showMessage("Sai mật khẩu!", "error");
+            
+            // Xử lý các trạng thái tài khoản
+            if (user.status === 'pending') {
+                return showMessage("Tài khoản của bạn ĐANG CHỜ DUYỆT. Vui lòng liên hệ Admin!", "warning");
+            }
+            if (user.status === 'revoked') {
+                return showMessage("Tài khoản của bạn đã BỊ HỦY quyền truy cập khóa học!", "error");
+            }
+
+            if (user.status === 'approved') {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('currentUser', user.fullname);
+                window.location.href = 'ly_thuyet.html'; // Chuyển hướng vào trang học
+            }
+        }
+
+        // ================= LOGIC ADMIN & BẢO MẬT PIN =================
+        const ADMIN_PIN = "190922";
+        const MAX_FAIL_ATTEMPTS = 3;
+
+        function openAdminAuth() {
+            if (localStorage.getItem('adminDeviceBanned') === 'true') {
+                alert("🚫 CẢNH BÁO BẢO MẬT: Thiết bị này đã bị cấm vĩnh viễn khỏi khu vực Admin do nhập sai mã PIN quá nhiều lần!");
+                return;
+            }
+
+            const adminPanel = document.getElementById('adminPanel');
+            const authBox = document.getElementById('adminAuth');
+            
+            if (adminPanel.style.display === 'block') {
+                adminPanel.style.display = 'none';
+            } else {
+                authBox.style.display = authBox.style.display === 'none' ? 'block' : 'none';
+                document.getElementById('adminPinInput').value = '';
+                document.getElementById('adminErrorMsg').style.display = 'none';
+            }
+        }
+
+        function verifyAdminPin() {
+            if (localStorage.getItem('adminDeviceBanned') === 'true') {
+                alert("🚫 LỖI: Thiết bị đã bị cấm!");
+                document.getElementById('adminAuth').style.display = 'none';
+                return;
+            }
+
+            const enteredPin = document.getElementById('adminPinInput').value;
+            let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
+            const errorMsgBox = document.getElementById('adminErrorMsg');
+
+            if (enteredPin === ADMIN_PIN) {
+                // ĐĂNG NHẬP ADMIN THÀNH CÔNG
+                localStorage.setItem('adminFailedAttempts', '0'); 
+                document.getElementById('adminAuth').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                renderUserList();
+            } else {
+                // NHẬP SAI PIN
+                failedAttempts++;
+                localStorage.setItem('adminFailedAttempts', failedAttempts);
+                let attemptsLeft = MAX_FAIL_ATTEMPTS - failedAttempts;
+
+                if (attemptsLeft <= 0) {
+                    localStorage.setItem('adminDeviceBanned', 'true');
+                    document.getElementById('adminAuth').style.display = 'none';
+                    alert("🚨 BÁO ĐỘNG: Bạn đã nhập sai mã PIN 3 lần. Thiết bị này CẤM truy cập khu vực Admin vĩnh viễn!");
+                } else {
+                    errorMsgBox.style.display = 'block';
+                    errorMsgBox.innerText = `Sai mã PIN! Bạn còn ${attemptsLeft} lần thử trước khi bị cấm.`;
+                    document.getElementById('adminPinInput').value = '';
+                }
+            }
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+
+        // ================= XỬ LÝ DANH SÁCH =================
+        function renderUserList() {
+            let db = JSON.parse(localStorage.getItem('usersDB'));
+            let pendingHTML = '';
+            let approvedHTML = '';
+
+            for (let username in db) {
+                let user = db[username];
+                
+                // Render sinh viên chờ duyệt
+                if (user.status === 'pending') {
+                    pendingHTML += `<div class="user-row" style="color: white;">
+                        <span><strong>${user.fullname}</strong><br><span style="color:#94a3b8; font-size: 0.75rem;">MSSV: ${username}</span></span>
+                        <button class="approve-btn" onclick="approveUser('${username}')">Duyệt</button>
+                    </div>`;
+                } 
+                // Render sinh viên đang học (đã duyệt)
+                else if (user.status === 'approved') {
+                    approvedHTML += `<div class="user-row" style="color: white;">
+                        <span><strong>${user.fullname}</strong><br><span style="color:#94a3b8; font-size: 0.75rem;">MSSV: ${username}</span></span>
+                        <button class="revoke-btn" onclick="revokeUser('${username}')">Hủy Học</button>
+                    </div>`;
+                }
+            }
+            
+            document.getElementById('userList').innerHTML = pendingHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Không có tài khoản chờ duyệt.</i>";
+            document.getElementById('approvedList').innerHTML = approvedHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Chưa có học viên nào.</i>";
+        }
+
+        function approveUser(username) {
+            let db = JSON.parse(localStorage.getItem('usersDB'));
+            db[username].status = 'approved';
+            localStorage.setItem('usersDB', JSON.stringify(db));
+            renderUserList(); // Load lại ngay 2 danh sách
+        }
+
+        // Hàm Hủy khóa học
+        function revokeUser(username) {
+            // Hỏi xác nhận trước khi Hủy
+            const confirmRevoke = confirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN HỦY KHÓA HỌC CỦA SINH VIÊN: ${username}?\n\nSinh viên này sẽ lập tức bị khóa tài khoản đăng nhập.`);
+            
+            if (confirmRevoke) {
+                let db = JSON.parse(localStorage.getItem('usersDB'));
+                db[username].status = 'revoked'; // Đổi trạng thái thành "Đã hủy"
+                localStorage.setItem('usersDB', JSON.stringify(db));
+                renderUserList(); // Load lại ngay 2 danh sách
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <!-- ================= SCRIPT BẢO VỆ TRANG ================= -->
+    <script>
+        // Lính gác: Kiểm tra xem bộ nhớ trình duyệt có vé thông hành (isLoggedIn) hay không
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            alert("⛔ CẢNH BÁO BẢO MẬT: Bạn chưa đăng nhập hoặc tài khoản chưa được duyệt! Hệ thống sẽ chuyển hướng bạn về trang chủ.");
+            // Đá người dùng về lại trang index.html
+            window.location.href = 'index.html'; 
+        }
+    </script>
+    <!-- ======================================================= -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luyện Đề Giải Tích 3 - TuanHungDJ</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --correct-color: #22c55e;
+            --wrong-color: #ef4444;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        nav { background-color: #0f172a; padding: 1rem; text-align: center; }
+        nav a { color: white; text-decoration: none; padding: 0.5rem 1.5rem; margin: 0 0.5rem; border-radius: 4px; font-weight: bold; transition: 0.3s; }
+        nav a.active { background-color: var(--primary-color); }
+        nav a:hover { background-color: #3b82f6; }
+
+        header { background-color: var(--primary-color); color: white; padding: 2rem; text-align: center; }
+        
+        .container { max-width: 1000px; margin: 2rem auto; background: white; padding: 2rem 3rem; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex: 1; width: 100%; box-sizing: border-box; }
+
+        /* Giao diện Dashboard chọn Đề */
+        #dashboard { display: block; }
+        .dashboard-title { text-align: center; color: #0f172a; margin-bottom: 2rem; font-size: 1.5rem; }
+        .grid-exams { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; }
+        .exam-card { background-color: #f8fafc; border: 2px solid var(--border-color); border-radius: 8px; padding: 2rem 1rem; text-align: center; cursor: pointer; transition: 0.3s; font-weight: bold; font-size: 1.2rem; color: #334155; }
+        .exam-card:hover { border-color: var(--primary-color); background-color: #eff6ff; color: var(--primary-color); transform: translateY(-5px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .exam-card.locked { background-color: #e2e8f0; color: #94a3b8; cursor: not-allowed; border-color: #cbd5e1; }
+        .exam-card.locked:hover { transform: none; box-shadow: none; }
+
+        /* Khu vực làm bài */
+        .exam-view { display: none; }
+        .timer-bar { position: sticky; top: 0; background-color: #f59e0b; color: white; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: bold; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: none;}
+        .exam-info { background-color: #eff6ff; border-left: 4px solid var(--primary-color); padding: 1rem; margin-bottom: 2rem; border-radius: 4px; }
+        .multi-choice-badge { background-color: #8b5cf6; color: white; font-size: 0.85rem; padding: 0.2rem 0.5rem; border-radius: 4px; margin-left: 10px; vertical-align: middle; }
+
+        /* Câu hỏi & Trạng thái đúng/sai */
+        .question-block { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px dashed var(--border-color); }
+        .question-text { font-weight: bold; font-size: 1.1rem; margin-bottom: 1rem; color: #0f172a;}
+        .options { display: flex; flex-direction: column; gap: 0.5rem; }
+        .option-label { display: flex; align-items: center; padding: 0.8rem 1rem; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .option-label:hover:not(.disabled) { background-color: #e2e8f0; }
+        .option-label input { margin-right: 10px; cursor: pointer; transform: scale(1.2);}
+        
+        .disabled { cursor: not-allowed !important; pointer-events: none;}
+        .correct-ans { background-color: #dcfce7 !important; border-color: var(--correct-color) !important; font-weight: bold; color: #166534;}
+        .wrong-ans { background-color: #fee2e2 !important; border-color: var(--wrong-color) !important; color: #991b1b; text-decoration: line-through;}
+        
+        .explanation { display: none; background-color: #fffbeb; padding: 1rem; border-radius: 6px; border-left: 4px solid #f59e0b; margin-top: 1rem; font-size: 0.95rem; }
+
+        .submit-btn { display: block; width: 100%; padding: 1rem; font-size: 1.2rem; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 2rem; }
+        .submit-btn:hover { background-color: #1d4ed8; }
+        .submit-btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
+        .result-box { display: none; text-align: center; padding: 2rem; background-color: #ecfdf5; border: 2px solid var(--correct-color); border-radius: 8px; margin-top: 2rem; font-size: 1.5rem; color: #166534; font-weight: bold; }
+
+        footer { background-color: #0f172a; color: #f1f5f9; text-align: center; padding: 2rem 1rem; margin-top: auto; }
+        footer h2 { margin: 0 0 0.5rem 0; color: #38bdf8; font-size: 1.5rem;}
+        footer a { color: #7dd3fc; text-decoration: none;}
+    </style>
+    <!-- MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <nav>
+        <a href="ly_thuyet.html">📚 Lý Thuyết Chương 1</a>
+        <a href="bai_tap.html">✏️ Bài Tập Luyện Tập</a>
+        <a href="luyen_de.html" class="active">📝 Luyện Đề Thi</a>
+    </nav>
+
+    <header>
+        <h1>Hệ Thống Luyện Đề Giải Tích 3</h1>
+        <p>10 Đề Thi Phân Hóa - Đánh giá năng lực tự động</p>
+    </header>
+
+    <!-- THANH THỜI GIAN (Ẩn ở ngoài, chỉ hiện khi vào đề) -->
+    <div id="timerBar" class="timer-bar">⏳ Thời gian còn lại: <span id="timeDisplay">45:00</span></div>
+
+    <div class="container">
+        
+        <!-- DASHBOARD: CHỌN ĐỀ THI -->
+        <div id="dashboard">
+            <h2 class="dashboard-title">BỘ 10 ĐỀ THI GIỮA KỲ (CẬP NHẬT 2026)</h2>
+            <div class="grid-exams">
+                <!-- Nút các đề. Hàm openExam('id_của_đề') sẽ gọi cái đề tương ứng ra -->
+                <div class="exam-card" onclick="openExam('de-1')">Đề Số 1</div>
+                <div class="exam-card" onclick="openExam('de-2')">Đề Số 2</div>
+                <div class="exam-card" onclick="openExam('de-3')">Đề Số 3</div>
+                <div class="exam-card" onclick="openExam('de-4')">Đề Số 4</div>
+                <div class="exam-card" onclick="openExam('de-5')">Đề Số 5</div>
+                <div class="exam-card" onclick="openExam('de-6')">Đề Số 6</div>
+                <div class="exam-card" onclick="openExam('de-7')">Đề Số 7</div>
+                <div class="exam-card" onclick="openExam('de-8')">Đề Số 8</div>
+                <div class="exam-card" onclick="openExam('de-9')">Đề Số 9</div>
+                <div class="exam-card" onclick="openExam('de-10')">Đề Số 10</div>
+            </div>
+        </div>
+
+        <!-- ================= KHU VỰC CHỨA CÁC ĐỀ THI ================= -->
+        <!-- Mỗi đề thi là 1 khối <div class="exam-data">. Dữ liệu đáp án nằm trực tiếp trong data-answer -->
+
+        <!-- ĐỀ SỐ 1 -->
+        <div id="de-1" class="exam-data" style="display: none;">
+            <div class="exam-info">
+                <strong>📋 Cấu trúc Đề 1:</strong><br>
+                - <strong>Câu 1-10:</strong> Trắc nghiệm 1 lựa chọn (1 đáp án đúng).<br>
+                - <strong>Câu 11-15:</strong> Chọn nhiều đáp án (Có thể có đến 6 lựa chọn, phải tích đủ và đúng mới có điểm).<br>
+                - Điểm số: Mỗi câu 2 điểm. Tổng: 30 điểm. Thời gian: 45 phút.<br>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">PHẦN I: TRẮC NGHIỆM 1 LỰA CHỌN</h3>
+
+            <!-- Chú ý thuộc tính data-type và data-answer -->
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 1: Chuỗi số nào sau đây KHÔNG thỏa mãn điều kiện cần để chuỗi hội tụ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q1" value="A"> A. \(\sum_{n=1}^{\infty} \frac{n+1}{\sqrt{2n^2+n+3}}\)</label>
+                    <label class="option-label"><input type="radio" name="q1" value="B"> B. \(\sum_{n=1}^{\infty} \frac{1}{n+\sqrt{n}}\)</label>
+                    <label class="option-label"><input type="radio" name="q1" value="C"> C. \(\sum_{n=1}^{\infty} \sin\left(\frac{1}{n}\right)\)</label>
+                    <label class="option-label"><input type="radio" name="q1" value="D"> D. \(\sum_{n=1}^{\infty} \frac{(-1)^n n}{n^2+1}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Điều kiện cần để chuỗi HT là \(\lim a_n = 0\). Ở đáp án A, \(\lim a_n = 1/\sqrt{2} \neq 0\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 2: Xét sự hội tụ của chuỗi số: \(\sum_{n=1}^{\infty} \frac{(-1)^n}{\sqrt{2n^2+n+1}}\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q2" value="A"> A. Hội tụ tuyệt đối</label>
+                    <label class="option-label"><input type="radio" name="q2" value="B"> B. Bán hội tụ</label>
+                    <label class="option-label"><input type="radio" name="q2" value="C"> C. Phân kỳ</label>
+                    <label class="option-label"><input type="radio" name="q2" value="D"> D. Chưa đủ điều kiện kết luận</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Chuỗi trị tuyệt đối phân kỳ theo chuỗi Riemann (\(\alpha = 1\)). Tuy nhiên, chuỗi đan dấu gốc thỏa mãn định lý Leibniz nên hội tụ \(\Rightarrow\) Bán hội tụ.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 3: Chuỗi số nào dưới đây là Hội tụ tuyệt đối?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q3" value="A"> A. \(\sum_{n=1}^{\infty} \frac{(-1)^n}{\sqrt{n+1}}\)</label>
+                    <label class="option-label"><input type="radio" name="q3" value="B"> B. \(\sum_{n=1}^{\infty} \frac{(-1)^n \ln n}{n}\)</label>
+                    <label class="option-label"><input type="radio" name="q3" value="C"> C. \(\sum_{n=1}^{\infty} (-1)^n \sin\left(\frac{1}{n^2}\right)\)</label>
+                    <label class="option-label"><input type="radio" name="q3" value="D"> D. \(\sum_{n=1}^{\infty} \frac{(-1)^n n}{2n+1}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Lấy trị tuyệt đối: \(|\sin(1/n^2)| \sim 1/n^2\) (hội tụ vì \(\alpha=2 > 1\)). Chuỗi gốc HTTĐ.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 4: Tính tổng của chuỗi số: \(S = \sum_{n=1}^{\infty} \left( \frac{3}{2^{n-1}} - \frac{4}{6^n} \right)\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q4" value="A"> A. \(6/5\)</label>
+                    <label class="option-label"><input type="radio" name="q4" value="B"> B. \(26/5\)</label>
+                    <label class="option-label"><input type="radio" name="q4" value="C"> C. \(11/5\)</label>
+                    <label class="option-label"><input type="radio" name="q4" value="D"> D. \(-4/5\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. \(S_1 = \frac{3}{1 - 1/2} = 6\). \(S_2 = \frac{4/6}{1 - 1/6} = 4/5\). Tổng \(S = 6 - 4/5 = 26/5\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 5: Tìm bán kính hội tụ \(R\) của chuỗi: \(\sum_{n=1}^{\infty} (-2)^n \left( \frac{n-1}{n+2} \right)^{n^2} x^n\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q5" value="A"> A. \(R = e^3/2\)</label>
+                    <label class="option-label"><input type="radio" name="q5" value="B"> B. \(R = 2e^3\)</label>
+                    <label class="option-label"><input type="radio" name="q5" value="C"> C. \(R = e^{-3}\)</label>
+                    <label class="option-label"><input type="radio" name="q5" value="D"> D. \(R = 2e^{-3}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Dùng Tiêu chuẩn Cauchy: \(\rho = \lim \sqrt[n]{|a_n|} = \lim 2 \left(1 - \frac{3}{n+2}\right)^n = 2e^{-3}\). Vậy \(R = 1/\rho = e^3/2\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 6: Tính tổng của chuỗi số: \(\sum_{n=1}^{\infty} \frac{2^n}{n!}\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q6" value="A"> A. \(e^2\)</label>
+                    <label class="option-label"><input type="radio" name="q6" value="B"> B. \(e^2 - 1\)</label>
+                    <label class="option-label"><input type="radio" name="q6" value="C"> C. \(e\)</label>
+                    <label class="option-label"><input type="radio" name="q6" value="D"> D. \(+\infty\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Biết \(e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} = 1 + \sum_{n=1}^{\infty} \frac{x^n}{n!}\). Thay \(x=2\) thu được kết quả \(e^2 - 1\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 7: Tìm miền hội tụ của chuỗi lũy thừa: \(\sum_{n=1}^{\infty} \frac{(-1)^n (x+1)^n}{n 7^n}\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q7" value="A"> A. \([-8, 6]\)</label>
+                    <label class="option-label"><input type="radio" name="q7" value="B"> B. \((-8, 6)\)</label>
+                    <label class="option-label"><input type="radio" name="q7" value="C"> C. \((-8, 6]\)</label>
+                    <label class="option-label"><input type="radio" name="q7" value="D"> D. \([-8, 6)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Bán kính \(R = 7 \Rightarrow -8 < x < 6\). Tại \(x=6\) thu được chuỗi đan dấu HT. Tại \(x=-8\) thu được chuỗi điều hòa PK.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 8: Hệ số \(b_3\) trong khai triển Fourier của hàm \(f(x) = x+1, x \in (-\pi, \pi)\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q8" value="A"> A. \(2\pi/3\)</label>
+                    <label class="option-label"><input type="radio" name="q8" value="B"> B. \(2/3\)</label>
+                    <label class="option-label"><input type="radio" name="q8" value="C"> C. \(\pi/3\)</label>
+                    <label class="option-label"><input type="radio" name="q8" value="D"> D. \(0\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Do \(1\) là hàm chẵn nên \(\int_{-\pi}^{\pi} 1 \cdot \sin(3x) = 0\). Chỉ còn hệ số của \(x\) là \(\frac{2}{3}(-1)^{3+1} = 2/3\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 9: Hệ số \(a_0\) trong khai triển Fourier của hàm \(f(x) = 3x^3, x \in (-\pi, \pi)\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q9" value="A"> A. \(3\pi^3/4\)</label>
+                    <label class="option-label"><input type="radio" name="q9" value="B"> B. \(3\pi^3/2\)</label>
+                    <label class="option-label"><input type="radio" name="q9" value="C"> C. \(1/2\)</label>
+                    <label class="option-label"><input type="radio" name="q9" value="D"> D. \(0\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. \(f(x) = 3x^3\) là hàm lẻ. Tích phân của hàm lẻ trên khoảng đối xứng luôn bằng 0. \(\Rightarrow a_0 = 0\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 10: Cho \(\sum_{n=1}^{\infty} n^2 x^n = \frac{x^2+x}{(1-x)^3}\). Khi đó, chuỗi hàm \(\sum_{n=1}^{\infty} n^3 x^n\) có tổng là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q10" value="A"> A. \(\frac{x^2+4x+1}{(1-x)^4}\)</label>
+                    <label class="option-label"><input type="radio" name="q10" value="B"> B. \(\frac{x^3+4x^2+x}{(1-x)^3}\)</label>
+                    <label class="option-label"><input type="radio" name="q10" value="C"> C. \(\frac{x^3+4x^2+x}{(1-x)^4}\)</label>
+                    <label class="option-label"><input type="radio" name="q10" value="D"> D. \(\frac{x^2+4x+1}{(1-x)^3}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Đạo hàm 2 vế phương trình ban đầu, sau đó nhân thêm \(x\) vào ta thu được kết quả ở đáp án C.</div>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem;">PHẦN II: TRẮC NGHIỆM NHIỀU LỰA CHỌN</h3>
+            <p style="color: #ef4444; font-style: italic;">* Phân loại sinh viên xuất sắc: Chọn TẤT CẢ các mệnh đề đúng. Sai/Thiếu 1 ý là mất toàn bộ điểm.</p>
+
+            <!-- LƯU Ý DATA-ANSWER DẠNG MULTIPLE CHỨA CHUỖI CÁC ĐÁP ÁN ĐÚNG CÁCH NHAU DẤU PHẨY -->
+            <div class="question-block" data-type="multiple" data-answer="B,D,F">
+                <div class="question-text">Câu 11: Cho chuỗi số đan dấu phụ thuộc tham số \(p\) sau: \(\sum_{n=1}^{\infty} (-1)^{n+1} \frac{n^p}{\sqrt{n^5 + 1}}\). Hãy chọn tất cả các mệnh đề <strong>SAI</strong>: <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q11" value="A"> A. Chuỗi hội tụ tuyệt đối khi và chỉ khi \(p < \frac{3}{2}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q11" value="B"> B. Chuỗi bán hội tụ khi \(p = 1\)</label>
+                    <label class="option-label"><input type="checkbox" name="q11" value="C"> C. Chuỗi phân kỳ khi \(p = 2.5\)</label>
+                    <label class="option-label"><input type="checkbox" name="q11" value="D"> D. Tại \(p = \frac{3}{2}\), chuỗi hội tụ tuyệt đối.</label>
+                    <label class="option-label"><input type="checkbox" name="q11" value="E"> E. Với \(p = 2\), chuỗi bán hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q11" value="F"> F. Chuỗi hội tụ tuyệt đối với mọi \(p < \frac{5}{2}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các mệnh đề SAI: <strong>B, D, F</strong>.<br>
+                Bậc mẫu trừ bậc tử là \(\alpha = 2.5 - p\). Chuỗi HTTĐ khi \(\alpha > 1 \Rightarrow p < 1.5\) (Ý A đúng). Do đó ý F sai. Tại \(p=1\), \(\alpha = 1.5 > 1\) nên nó HTTĐ chứ không Bán HT (Ý B sai). Tại \(p=1.5\), \(\alpha = 1 \Rightarrow\) Bán HT (Ý D sai).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,E">
+                <div class="question-text">Câu 12: Trong các chuỗi số sau đây, những chuỗi nào là chuỗi <strong>BÁN HỘI TỤ</strong>? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q12" value="A"> A. \(\sum_{n=2}^{\infty} \frac{(-1)^n \ln n}{n}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12" value="B"> B. \(\sum_{n=1}^{\infty} (-1)^n \left(\sqrt{n^2+1} - n\right)\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12" value="C"> C. \(\sum_{n=1}^{\infty} \frac{(-1)^n n!}{n^n}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12" value="D"> D. \(\sum_{n=1}^{\infty} (-1)^n \left(\frac{n+1}{n}\right)^n\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12" value="E"> E. \(\sum_{n=1}^{\infty} \frac{(-1)^n}{\sqrt{n}}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12" value="F"> F. \(\sum_{n=1}^{\infty} (-1)^n \sin\left(\frac{1}{n^2}\right)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, E</strong>.<br>
+                - (B): Liên hợp ra \(\frac{1}{\sqrt{n^2+1}+n} \sim \frac{1}{2n}\) (Phân kỳ). Nhưng chuỗi đan dấu HT \(\Rightarrow\) BHT.<br>
+                - (C) & (F) HTTĐ. (D) Phân kỳ.</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,C">
+                <div class="question-text">Câu 13: Cho chuỗi hàm số \(\sum_{n=1}^{\infty} \frac{1}{n^{x^2 - 8}}\). Khẳng định nào sau đây là <strong>ĐÚNG</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q13" value="A"> A. Khi \(x = 0\), chuỗi số đã cho phân kỳ.</label>
+                    <label class="option-label"><input type="checkbox" name="q13" value="B"> B. Tập hợp các giá trị của x để chuỗi số phân kỳ là khoảng \((-3; 3)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13" value="C"> C. Chuỗi hội tụ khi và chỉ khi \(x \in (-\infty; -3) \cup (3; +\infty)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13" value="D"> D. Tại điểm \(x = 2\sqrt{2}\), chuỗi số đã cho hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q13" value="E"> E. Bán kính hội tụ của chuỗi là \(R = 3\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, C</strong>.<br>
+                Hội tụ theo chuỗi Riemann khi \(\alpha = x^2 - 8 > 1 \Rightarrow x^2 > 9 \Rightarrow |x| > 3\). Ý B sai vì tập phân kỳ phải là đoạn \([-3, 3]\).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,C,D">
+                <div class="question-text">Câu 14: Hàm \(f(x) = \pi - x\) (\(0 < x < \pi\)) khai triển Fourier theo hàm sin. Gọi \(S(x)\) là tổng của chuỗi. Mệnh đề nào <strong>ĐÚNG</strong>? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q14" value="A"> A. \(S(x) = \sum_{n=1}^{\infty} \frac{2}{n} \sin(nx)\)</label>
+                    <label class="option-label"><input type="checkbox" name="q14" value="B"> B. \(S(x) = \sum_{n=1}^{\infty} \frac{1}{n} \sin(nx)\)</label>
+                    <label class="option-label"><input type="checkbox" name="q14" value="C"> C. Tại \(x = 0\), tổng của chuỗi \(S(0) = 0\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14" value="D"> D. Trên \((-\pi, 0)\), chuỗi hội tụ về \(S(x) = -\pi - x\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14" value="E"> E. Tại \(x = \pi/2\), tổng của chuỗi \(S(\pi/2) = 0\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14" value="F"> F. Chuỗi Fourier hội tụ đều trên đoạn \([-\pi, \pi]\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, C, D</strong>.<br>
+                - Do khai triển hàm sin nên ta thác triển lẻ hàm f(x). \(f(-x) = -f(x) = -(\pi - (-x)) = -\pi - x\) (Ý D đúng).<br>
+                - Thác triển lẻ tạo ra điểm gián đoạn tại \(x=0\), theo Dirichlet \(S(0) = \frac{f(0^+)+f(0^-)}{2} = 0\) (Ý C đúng). Chuỗi không hội tụ đều (Ý F sai).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,C,E">
+                <div class="question-text">Câu 15: Về tính chất của chuỗi lũy thừa \(\sum_{n=0}^{\infty} a_n x^n\) có bán kính \(R > 0\) và tổng \(S(x)\). Khẳng định nào <strong>ĐÚNG</strong>? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q15" value="A"> A. \(S(x)\) liên tục trên khoảng \((-R, R)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15" value="B"> B. Chuỗi hội tụ đều trên khoảng mở \((-R, R)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15" value="C"> C. Có thể lấy đạo hàm từng số hạng của chuỗi trong \((-R, R)\) để được \(S'(x)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15" value="D"> D. Bán kính hội tụ của chuỗi đạo hàm nhỏ hơn \(R\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15" value="E"> E. Chuỗi hội tụ đều trên mọi đoạn \([a, b] \subset (-R, R)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15" value="F"> F. Tại \(x = R\), chuỗi luôn phân kỳ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, C, E</strong>.<br>
+                Chuỗi lũy thừa chỉ hội tụ đều trên ĐOẠN con kín \([a, b]\) bên trong \((-R, R)\) (Ý E đúng, Ý B sai). Đạo hàm và tích phân không làm thay đổi bán kính R (Ý D sai). Tại mút \(x=R\) chuỗi có thể hội tụ hoặc PK (Ý F sai).</div>
+            </div>
+
+            <button type="button" class="submit-btn" onclick="submitExam('de-1')">NỘP BÀI & XEM ĐIỂM</button>
+            <div class="result-box"></div>
+        </div>
+
+        <!-- ĐỀ SỐ 2 -->
+        <div id="de-2" class="exam-data" style="display: none;">
+            <div class="exam-info">
+                <strong>📋 Cấu trúc Đề 2:</strong><br>
+                - <strong>Câu 1-10:</strong> Trắc nghiệm 1 lựa chọn (1 đáp án đúng).<br>
+                - <strong>Câu 11-15:</strong> Chọn nhiều đáp án (Từ 5-6 lựa chọn, tích đủ và đúng mới có điểm).<br>
+                - Điểm số: Mỗi câu 2 điểm. Tổng: 30 điểm. Chúc bạn làm bài thật tốt!<br>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">PHẦN I: TRẮC NGHIỆM 1 LỰA CHỌN</h3>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 1: Trong các chuỗi số sau, chuỗi số nào PHÂN KỲ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q1_de2" value="A"> A. \(\sum_{n=1}^{\infty} \frac{n}{n^3+4}\)</label>
+                    <label class="option-label"><input type="radio" name="q1_de2" value="B"> B. \(\sum_{n=1}^{\infty} \frac{(-1)^n \cos(\pi n)}{\sqrt{n}}\)</label>
+                    <label class="option-label"><input type="radio" name="q1_de2" value="C"> C. \(\sum_{n=1}^{\infty} \frac{4}{3^n}\)</label>
+                    <label class="option-label"><input type="radio" name="q1_de2" value="D"> D. \(\sum_{n=1}^{\infty} \frac{(-1)^n \sqrt{n}}{n^2+1}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Bẫy lượng giác: Ta có \(\cos(\pi n) = (-1)^n\). Do đó số hạng tổng quát của B là \(\frac{(-1)^n \cdot (-1)^n}{\sqrt{n}} = \frac{1}{\sqrt{n}}\). Đây là chuỗi Riemann dương với \(\alpha = 1/2 < 1\) nên Phân kỳ. Các chuỗi còn lại đều hội tụ.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 2: Tính tổng của chuỗi số \(\sum_{n=1}^{\infty} \frac{x^n}{n}\) với \(-1 \le x < 1\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q2_de2" value="A"> A. \(-\ln(1 - x)\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de2" value="B"> B. \(\ln(1 + x)\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de2" value="C"> C. \(\frac{x}{1-x}\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de2" value="D"> D. \(\frac{1}{1-x} - 1\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Đây là khai triển Maclaurin kinh điển. Lấy đạo hàm của tổng ta có \(\left(\sum \frac{x^n}{n}\right)' = \sum x^{n-1} = \frac{1}{1-x}\). Tích phân ngược lại \(\int \frac{1}{1-x}dx = -\ln(1-x)\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 3: Giả sử bán kính hội tụ của chuỗi lũy thừa \(\sum_{n=1}^{\infty} a_n x^n\) là 16. Khi đó, bán kính hội tụ của chuỗi \(\sum_{n=1}^{\infty} a_n x^{2n}\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q3_de2" value="A"> A. 256</label>
+                    <label class="option-label"><input type="radio" name="q3_de2" value="B"> B. 4</label>
+                    <label class="option-label"><input type="radio" name="q3_de2" value="C"> C. 1</label>
+                    <label class="option-label"><input type="radio" name="q3_de2" value="D"> D. 16</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Chuỗi ban đầu hội tụ khi \(|x| < 16\). Đặt \(X = x^2\), chuỗi mới là \(\sum a_n X^n\) sẽ hội tụ khi \(|X| < 16 \Rightarrow |x^2| < 16 \Rightarrow |x| < 4\). Vậy bán kính mới là 4.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 4: Tìm bán kính hội tụ của chuỗi lũy thừa sau: \(\sum_{n=1}^{\infty} \frac{3^n}{(n+1)!}x^n\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q4_de2" value="A"> A. \(R = 3\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de2" value="B"> B. \(R = 1/3\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de2" value="C"> C. \(R = 0\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de2" value="D"> D. \(R = +\infty\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Dùng D'Alembert: \(\rho = \lim \left|\frac{a_{n+1}}{a_n}\right| = \lim \frac{3^{n+1}}{(n+2)!} \cdot \frac{(n+1)!}{3^n} = \lim \frac{3}{n+2} = 0\). Suy ra \(R = 1/\rho = +\infty\). Chuỗi hội tụ với mọi \(x\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 5: Chuỗi số nào sau đây BÁN HỘI TỤ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q5_de2" value="A"> A. \(\sum_{n=1}^{\infty} \frac{(-1)^n}{n^4+1}\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de2" value="B"> B. \(\sum_{n=1}^{\infty} \frac{(-1)^n n}{n^2+1}\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de2" value="C"> C. \(\sum_{n=1}^{\infty} \frac{\cos n}{n^3}\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de2" value="D"> D. \(\sum_{n=1}^{\infty} \frac{(-1)^n}{4^n}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. A, C, D đều Hội tụ tuyệt đối vì chuỗi trị tuyệt đối của chúng hội tụ (theo chuỗi Riemann hoặc CSN). Riêng B, chuỗi trị tuyệt đối \(\sim \frac{1}{n}\) phân kỳ, nhưng chuỗi đan dấu hội tụ theo Leibniz.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 6: Cho biết khai triển Fourier của \(f(x) = x^2\) trên \((-\pi, \pi)\) là \(f(x) = \frac{\pi^2}{3} + 4 \sum_{n=1}^{\infty} \frac{(-1)^n}{n^2} \cos(nx)\). Tính tổng chuỗi \(\sum_{n=1}^{\infty} \frac{1}{n^2}\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q6_de2" value="A"> A. \(\pi^2/6\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de2" value="B"> B. \(\pi^2/12\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de2" value="C"> C. \(\pi^2/3\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de2" value="D"> D. \(\pi^2/8\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Áp dụng định lý Dirichlet tại điểm liên tục \(x = \pi\) (thác triển tuần hoàn). Ta có \(f(\pi) = \pi^2\). Thay \(x = \pi\) vào chuỗi: \(\pi^2 = \frac{\pi^2}{3} + 4\sum \frac{(-1)^n}{n^2} (-1)^n \Rightarrow \frac{2\pi^2}{3} = 4\sum \frac{1}{n^2} \Rightarrow \sum \frac{1}{n^2} = \frac{\pi^2}{6}\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 7: Với giá trị nào của \(p\) thì chuỗi số \(\sum_{n=2}^{\infty} \frac{1}{n (\ln n)^{2p-1}}\) hội tụ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q7_de2" value="A"> A. \(p \ge 1\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de2" value="B"> B. \(p > 1\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de2" value="C"> C. \(p > 2\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de2" value="D"> D. \(p > 0\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Theo tiêu chuẩn Tích phân (chuỗi Bertrand), chuỗi \(\sum \frac{1}{n (\ln n)^{\alpha}}\) hội tụ khi và chỉ khi \(\alpha > 1\). Suy ra \(2p - 1 > 1 \Rightarrow 2p > 2 \Rightarrow p > 1\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 8: Hàm \(\frac{1}{(1-x)^2}\) có chuỗi Maclaurin là \(\sum_{n=0}^{\infty} (n+1)x^n\) với \(|x| < 1\). Tính tổng của chuỗi số \(\sum_{n=0}^{\infty} \frac{(-1)^n (n+1)}{3^n}\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q8_de2" value="A"> A. \(9/4\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de2" value="B"> B. \(-9/4\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de2" value="C"> C. \(9/16\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de2" value="D"> D. \(-9/16\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Ta nhận thấy chuỗi cần tính chính là chuỗi Maclaurin trên tại \(x = -1/3\). Thay \(x = -1/3\) vào hàm số: \(S = \frac{1}{(1 - (-1/3))^2} = \frac{1}{(4/3)^2} = \frac{9}{16}\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 9: Cho chuỗi hàm \(S(x) = \sum_{n=1}^{\infty} n x^n\) với \(|x| < 1\). Hàm số \(S(x)\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q9_de2" value="A"> A. \(\frac{x}{1-x}\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de2" value="B"> B. \(\frac{x}{(1-x)^2}\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de2" value="C"> C. \(\frac{1}{(1-x)^2}\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de2" value="D"> D. \(-\ln(1-x)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Ta có \(S(x) = x \sum_{n=1}^{\infty} n x^{n-1} = x \left( \sum_{n=1}^{\infty} x^n \right)' = x \left( \frac{x}{1-x} \right)' = x \cdot \frac{1}{(1-x)^2} = \frac{x}{(1-x)^2}\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 10: Chuỗi nào sau đây hội tụ theo tiêu chuẩn Leibniz?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q10_de2" value="A"> A. \(\sum_{n=2}^{\infty} \cos(n\pi) \frac{\ln n}{n}\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de2" value="B"> B. \(\sum_{n=1}^{\infty} (-1)^n \frac{\sqrt{n}}{\ln n}\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de2" value="C"> C. \(\sum_{n=1}^{\infty} \sin\left(\frac{n\pi}{2}\right) \frac{1}{n^2}\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de2" value="D"> D. \(\sum_{n=1}^{\infty} (-1)^n \frac{n}{n+1}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. \(\cos(n\pi) = (-1)^n\). Dãy \(a_n = \frac{\ln n}{n}\) dương, giảm và tiến về 0 nên HT theo Leibniz. (B) Dãy không tiến về 0. (C) Hội tụ tuyệt đối chứ không dùng Leibniz. (D) \(\lim a_n \neq 0\).</div>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem;">PHẦN II: TRẮC NGHIỆM NHIỀU LỰA CHỌN</h3>
+            <p style="color: #ef4444; font-style: italic;">* Phân loại: Chọn TẤT CẢ các mệnh đề đúng. Sai/Thiếu 1 ý là 0 điểm.</p>
+
+            <div class="question-block" data-type="multiple" data-answer="A,C,D,F">
+                <div class="question-text">Câu 11: Xét chuỗi hàm số \(S(x) = \sum_{n=1}^{\infty} \frac{x^n}{n 2^n}\). Chọn các khẳng định <strong>ĐÚNG</strong>: <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q11_de2" value="A"> A. Bán kính hội tụ của chuỗi là \(R = 2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de2" value="B"> B. Miền hội tụ của chuỗi là khoảng \((-2, 2]\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de2" value="C"> C. Chuỗi hội tụ đều trên đoạn \([-1, 1]\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de2" value="D"> D. Tổng của chuỗi tại \(x = -2\) là \(-\ln 2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de2" value="E"> E. Đạo hàm \(S'(x)\) có bán kính hội tụ nhỏ hơn \(2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de2" value="F"> F. Tại \(x = 2\), chuỗi phân kỳ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, C, D, F</strong>.<br>
+                - Bán kính \(R = 2\) (Ý A đúng).<br>
+                - Tại \(x=2\), chuỗi là \(\sum \frac{1}{n}\) phân kỳ (Ý F đúng). Tại \(x=-2\), chuỗi là \(\sum \frac{(-1)^n}{n} = -\ln 2\) hội tụ (Ý D đúng). Vậy miền HT là \([-2, 2)\) (Ý B sai).<br>
+                - \([-1, 1] \subset (-2, 2)\) nên chuỗi hội tụ đều trên đó (Ý C đúng).<br>
+                - Bán kính hội tụ của chuỗi đạo hàm luôn bằng chuỗi gốc (Ý E sai).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C,E">
+                <div class="question-text">Câu 12: Khai triển Fourier của hàm \(f(x) = -1\) khi \(-\pi \le x < 0\) và \(f(x) = 1\) khi \(0 \le x < \pi\). Mệnh đề nào sau đây <strong>ĐÚNG</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q12_de2" value="A"> A. \(f(x)\) là hàm số lẻ nên \(a_0 = 0\) và \(a_n = 0\).</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de2" value="B"> B. Hệ số \(b_n = \frac{2}{n\pi} (1 - (-1)^n)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de2" value="C"> C. Tại \(x=0\), chuỗi Fourier hội tụ về giá trị 0.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de2" value="D"> D. Tại \(x=\pi\), chuỗi Fourier hội tụ về giá trị 1.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de2" value="E"> E. Giá trị của hệ số \(b_2 = 0\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C, E</strong>.<br>
+                - Hàm lẻ nên \(a_n = 0\) (A đúng).<br>
+                - \(b_n = \frac{2}{\pi} \int_0^\pi 1 \sin(nx)dx = \frac{2}{n\pi}(1-\cos n\pi) = \frac{2}{n\pi}(1-(-1)^n)\) (B đúng). Với n=2 chẵn thì \(b_2=0\) (E đúng).<br>
+                - Tại \(x=0\) và \(x=\pi\) là các điểm gián đoạn, tổng chuỗi = trung bình cộng 2 giới hạn trái phải = \((-1+1)/2 = 0\) (C đúng, D sai).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,C,E">
+                <div class="question-text">Câu 13: Xét lý thuyết đại cương về chuỗi số dương và chuỗi có dấu bất kỳ. Các mệnh đề nào sau đây là <strong>ĐÚNG</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q13_de2" value="A"> A. Nếu \(\lim a_n \neq 0\) thì chuỗi \(\sum a_n\) phân kỳ.</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de2" value="B"> B. Nếu \(\sum a_n\) phân kỳ và \(\sum b_n\) phân kỳ thì \(\sum (a_n+b_n)\) phân kỳ.</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de2" value="C"> C. Nếu chuỗi đan dấu \(\sum (-1)^n a_n\) hội tụ thì \(\lim a_n = 0\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de2" value="D"> D. Nếu \(a_n > 0\) và \(\lim \frac{a_{n+1}}{a_n} = 1\) thì chuỗi \(\sum a_n\) chắc chắn phân kỳ.</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de2" value="E"> E. Nếu chuỗi trị tuyệt đối \(\sum |a_n|\) hội tụ thì \(\sum a_n\) hội tụ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, C, E</strong>.<br>
+                - Ý B sai: Phản ví dụ \(a_n = 1, b_n = -1\) đều phân kỳ nhưng tổng lại = 0 (hội tụ).<br>
+                - Ý D sai: Khi D'Alembert ra L=1 ta chưa thể kết luận (ví dụ chuỗi \(\sum 1/n^2\) có L=1 nhưng HT).<br>
+                - C đúng vì đó là Điều kiện cần của mọi chuỗi HT. E đúng theo định nghĩa HT Tuyệt đối.</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,C,E">
+                <div class="question-text">Câu 14: Trong các chuỗi số sau đây, những chuỗi nào là chuỗi <strong>BÁN HỘI TỤ</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q14_de2" value="A"> A. \(\sum_{n=1}^{\infty} \frac{(-1)^n}{\sqrt{n}}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de2" value="B"> B. \(\sum_{n=1}^{\infty} \frac{(-1)^n \sin n}{n^2}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de2" value="C"> C. \(\sum_{n=2}^{\infty} \frac{(-1)^n}{n \ln n}\)</label>
+                    <label class="option-label"><input type="radio" name="q14_de2" value="D"> D. \(\sum_{n=1}^{\infty} \frac{(-1)^n n}{n+1}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de2" value="E"> E. \(\sum_{n=1}^{\infty} \frac{\cos(n\pi)}{\sqrt[1]{n+2}}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, C, E</strong>.<br>
+                - (A) và (E): Trị tuyệt đối là \(\alpha = 1/2\) và \(1/3\) (Phân kỳ), đan dấu HT Leibniz \(\Rightarrow\) BHT.<br>
+                - (B): Trị tuyệt đối \(\le \frac{1}{n^2}\) (Hội tụ) \(\Rightarrow\) Hội tụ tuyệt đối.<br>
+                - (C): Trị tuyệt đối phân kỳ theo Bertrand (chuỗi tích phân), đan dấu HT Leibniz \(\Rightarrow\) BHT.<br>
+                - (D): Phân kỳ do \(\lim a_n \neq 0\).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,F">
+                <div class="question-text">Câu 15: Biết hàm số \(S(x) = \sum_{n=1}^{\infty} \frac{x^n}{n} = -\ln(1-x)\) với \(x \in [-1, 1)\). Chọn các mệnh đề <strong>ĐÚNG</strong>: <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q15_de2" value="A"> A. Tổng của chuỗi tại \(x = 1/2\) là \(\ln 2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de2" value="B"> B. Đạo hàm của \(S(x)\) là \(S'(x) = \frac{1}{1-x}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de2" value="C"> C. Tại \(x = -1\), chuỗi có tổng bằng \(\ln 2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de2" value="D"> D. Tập hội tụ của chuỗi \(S(x)\) là khoảng mở \((-1, 1)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de2" value="E"> E. \(S(x)\) là một hàm số chẵn.</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de2" value="F"> F. \(\sum_{n=1}^{\infty} \frac{1}{n 2^n} = \ln 2\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, F</strong>.<br>
+                - (A) Thay \(x=1/2 \Rightarrow -\ln(1-1/2) = -\ln(1/2) = \ln 2\). Cùng lý do đó (F) cũng đúng.<br>
+                - (B) Đạo hàm \(\sum x^{n-1} = \frac{1}{1-x}\).<br>
+                - (C) Thay \(x=-1 \Rightarrow -\ln(1 - (-1)) = -\ln 2\) chứ không phải \(\ln 2\).<br>
+                - (D) Miền hội tụ phải chứa mút -1, là \([-1, 1)\). (E) \(-\ln(1-x)\) không phải hàm chẵn.</div>
+            </div>
+
+            <button type="button" class="submit-btn" onclick="submitExam('de-2')">NỘP BÀI & XEM ĐIỂM ĐỀ 2</button>
+            <div class="result-box"></div>
+        </div>
+        <!-- Nếu sau này bạn muốn update Đề 2, chỉ cần bảo mình "Code Đề 2", mình gửi code có <div id="de-2" class="exam-data" style="display:none;">...</div>, bạn dán thẳng vào đây là Web tự nhận! -->
+        <!-- ĐỀ SỐ 3 -->
+        <div id="de-3" class="exam-data" style="display: none;">
+            <div class="exam-info">
+                <strong>📋 Cấu trúc Đề 3 (Mức độ Khó):</strong><br>
+                - <strong>Câu 1-10:</strong> Trắc nghiệm 1 lựa chọn. Xoáy sâu vào Khai triển Maclaurin và Ứng dụng.<br>
+                - <strong>Câu 11-15:</strong> Chọn nhiều đáp án (Lên tới 6 lựa chọn, phải tích chuẩn xác).<br>
+                - Điểm số: Mỗi câu 2 điểm. Tổng: 30 điểm. Chúc bạn bứt phá!<br>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">PHẦN I: TRẮC NGHIỆM 1 LỰA CHỌN</h3>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 1: Khảo sát sự hội tụ của chuỗi số dương sau: \(\sum_{n=1}^{\infty} \frac{n^2}{\sqrt{n^7+1}}\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q1_de3" value="A"> A. Phân kỳ</label>
+                    <label class="option-label"><input type="radio" name="q1_de3" value="B"> B. Hội tụ tuyệt đối</label>
+                    <label class="option-label"><input type="radio" name="q1_de3" value="C"> C. Bán hội tụ</label>
+                    <label class="option-label"><input type="radio" name="q1_de3" value="D"> D. Chưa đủ điều kiện kết luận</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Khi \(n \to +\infty\), ta có số hạng tổng quát \(a_n \sim \frac{n^2}{\sqrt{n^7}} = \frac{n^2}{n^{7/2}} = \frac{1}{n^{3/2}}\). Vì đây là chuỗi Riemann với \(\alpha = 3/2 > 1\) nên chuỗi hội tụ. Vì là chuỗi dương nên nó cũng là hội tụ tuyệt đối.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 2: Với giá trị nào của \(\alpha\) thì chuỗi số \(\sum_{n=1}^{\infty} n^2 \sin\left(\frac{1}{n^\alpha}\right)\) hội tụ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q2_de3" value="A"> A. \(\alpha > 1\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de3" value="B"> B. \(\alpha < 2\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de3" value="C"> C. \(\alpha \neq 3\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de3" value="D"> D. \(\alpha > 3\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Khi \(n \to \infty\), góc \(\frac{1}{n^\alpha} \to 0\). Dùng vô cùng bé tương đương: \(\sin\left(\frac{1}{n^\alpha}\right) \sim \frac{1}{n^\alpha}\). Suy ra \(a_n \sim n^2 \cdot \frac{1}{n^\alpha} = \frac{1}{n^{\alpha - 2}}\). Để chuỗi hội tụ thì số mũ \(\alpha - 2 > 1 \Rightarrow \alpha > 3\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 3: Tính tổng của chuỗi số vô hạn: \(\sum_{n=1}^{\infty} \frac{n}{5^n}\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q3_de3" value="A"> A. \(5/16\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de3" value="B"> B. \(16/5\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de3" value="C"> C. \(1/4\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de3" value="D"> D. \(5/4\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Xét hàm \(S(x) = \sum_{n=1}^{\infty} n x^n = x \sum_{n=1}^{\infty} n x^{n-1} = x \left(\sum_{n=1}^{\infty} x^n\right)' = x \left(\frac{x}{1-x}\right)' = \frac{x}{(1-x)^2}\). Thay \(x = 1/5\), ta được tổng bằng \(\frac{1/5}{(1 - 1/5)^2} = \frac{1/5}{16/25} = \frac{5}{16}\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 4: Với giá trị nào của \(\alpha\) thì chuỗi \(\sum_{n=1}^{\infty} n^\alpha \left(1 - \cos \frac{1}{\sqrt{n^3}}\right)\) hội tụ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q4_de3" value="A"> A. \(\alpha \neq 2\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de3" value="B"> B. \(\alpha = 2\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de3" value="C"> C. \(\alpha < 2\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de3" value="D"> D. \(\alpha \ge 2\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Dùng VCB tương đương: \(1 - \cos u \sim \frac{u^2}{2}\). Suy ra \(1 - \cos\left(\frac{1}{n^{3/2}}\right) \sim \frac{1}{2n^3}\). Vậy \(a_n \sim n^\alpha \cdot \frac{1}{2n^3} = \frac{1}{2n^{3-\alpha}}\). Để chuỗi hội tụ thì \(3 - \alpha > 1 \Rightarrow \alpha < 2\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 5: Biết hàm số \(\ln(x+1)\) có chuỗi Maclaurin là \(\sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n}x^n\). Tính tổng chuỗi số \(\sum_{n=1}^{\infty} \frac{(-1)^n}{n 2^{n-1}}\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q5_de3" value="A"> A. \(2\ln(3/2)\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de3" value="B"> B. \(-2\ln(3/2)\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de3" value="C"> C. \(\ln(3/2)\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de3" value="D"> D. \(-\ln(3/2)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Thay \(x = 1/2\) vào khai triển: \(\ln(3/2) = \sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n 2^n}\). Chuỗi đề bài yêu cầu là \(\sum_{n=1}^{\infty} \frac{(-1)^n}{n 2^{n-1}}\). Nhận thấy chuỗi này bằng chuỗi ban đầu nhân với \(-2\). Vậy tổng là \(-2\ln(3/2)\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 6: Cho hàm \(f(x)\) tuần hoàn chu kì \(2\pi\) với \(f(x) = -2\) khi \(-\pi < x \le 0\) và \(f(x) = 2\) khi \(0 < x \le \pi\). Hệ số Fourier \(b_n\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q6_de3" value="A"> A. \(\frac{4}{n\pi}(1 - (-1)^n)\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de3" value="B"> B. \(-\frac{4}{n\pi}(1 + (-1)^n)\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de3" value="C"> C. \(\frac{2}{n\pi}(1 - (-1)^n)\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de3" value="D"> D. \(0\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Đây là hàm lẻ nên \(a_0 = a_n = 0\). \(b_n = \frac{2}{\pi} \int_0^\pi 2 \sin(nx) dx = \frac{4}{\pi} \left[ -\frac{\cos nx}{n} \right]_0^\pi = \frac{4}{n\pi} (1 - \cos n\pi) = \frac{4}{n\pi} (1 - (-1)^n)\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 7: Với giá trị nào của \(\alpha\) thì chuỗi \(\sum_{n=1}^{\infty} \frac{(-1)^n}{1 + n^{\alpha-1}}\) là chuỗi BÁN HỘI TỤ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q7_de3" value="A"> A. \(1 < \alpha \le 2\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de3" value="B"> B. \(-1 \le \alpha \le 0\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de3" value="C"> C. \(0 \le \alpha \le 1\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de3" value="D"> D. \(\alpha \le 0\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Để chuỗi đan dấu hội tụ theo Leibniz, cần \(\lim a_n = 0 \Rightarrow \alpha - 1 > 0 \Rightarrow \alpha > 1\). Để chuỗi BÁN hội tụ thì chuỗi trị tuyệt đối \(\sum \frac{1}{n^{\alpha-1}}\) phải phân kỳ \(\Rightarrow \alpha - 1 \le 1 \Rightarrow \alpha \le 2\). Kết hợp lại: \(1 < \alpha \le 2\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 8: Cho \(f(x)\) tuần hoàn chu kì \(2\pi\), có \(f(x) = -x\) khi \(-\pi < x \le 0\) và \(f(x) = 1\) khi \(0 < x \le \pi\). Gọi \(S(x)\) là tổng chuỗi Fourier. Giá trị \(S(3\pi)\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q8_de3" value="A"> A. \(0\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de3" value="B"> B. \(\frac{\pi+1}{2}\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de3" value="C"> C. \(\pi\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de3" value="D"> D. \(1/2\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Vì hàm tuần hoàn chu kỳ \(2\pi\) nên \(S(3\pi) = S(\pi)\). Tại \(x = \pi\), hàm số bị gián đoạn. Áp dụng định lý Dirichlet: \(S(\pi) = \frac{f(\pi^-) + f(-\pi^+)}{2} = \frac{1 + (-\cdot(-\pi))}{2} = \frac{\pi+1}{2}\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 9: Miền hội tụ của chuỗi hàm số \(\sum_{n=1}^{\infty} \frac{n}{n^3+x}\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q9_de3" value="A"> A. \(\mathbb{R} \setminus \{-1^3, -2^3, \dots\}\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de3" value="B"> B. \(\mathbb{R} \setminus \{1^3, 2^3, \dots\}\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de3" value="C"> C. \(\mathbb{R}\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de3" value="D"> D. \(\mathbb{R}^+\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Xét một \(x\) bất kỳ cố định sao cho mẫu khác 0, khi \(n \to \infty\), \(a_n \sim \frac{n}{n^3} = \frac{1}{n^2}\). Chuỗi luôn hội tụ tuyệt đối với mọi \(x\). Điều kiện duy nhất là mẫu số không được bằng 0, tức là \(n^3 + x \neq 0 \Rightarrow x \neq -n^3\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 10: Ứng dụng chuỗi Maclaurin, tính giới hạn \(\lim_{x \to 0} \frac{\sin x - x + \frac{x^3}{6}}{x^5}\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q10_de3" value="A"> A. \(1/120\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de3" value="B"> B. \(1/24\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de3" value="C"> C. \(1/12\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de3" value="D"> D. \(1/90\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Khai triển Maclaurin của \(\sin x = x - \frac{x^3}{3!} + \frac{x^5}{5!} - O(x^7)\). Thay vào tử số: \((x - \frac{x^3}{6} + \frac{x^5}{120}) - x + \frac{x^3}{6} = \frac{x^5}{120}\). Chia cho \(x^5\) ta được giới hạn là \(1/120\).</div>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem;">PHẦN II: TRẮC NGHIỆM NHIỀU LỰA CHỌN</h3>
+            <p style="color: #ef4444; font-style: italic;">* Chú ý: Chọn TẤT CẢ các mệnh đề đúng. Sai/Thiếu 1 ý là 0 điểm.</p>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C,D,E">
+                <div class="question-text">Câu 11: Cho chuỗi lũy thừa \(\sum_{n=0}^{\infty} a_n(x-5)^n\) hội tụ tại \(x = 2\) và phân kỳ tại \(x = 10\). Chọn các mệnh đề <strong>ĐÚNG</strong>: <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q11_de3" value="A"> A. Bán kính hội tụ \(R\) thỏa mãn: \(3 \le R \le 5\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de3" value="B"> B. Chuỗi hội tụ tại \(x = 2.5\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de3" value="C"> C. Chuỗi không hội tụ tại \(x = -1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de3" value="D"> D. Không thể xác định chính xác miền HT chỉ từ thông tin trên.</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de3" value="E"> E. Chuỗi đạo hàm của nó cũng hội tụ tại \(x = 3\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de3" value="F"> F. Chuỗi chắc chắn hội tụ đều trên đoạn \([1, 2]\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C, D, E</strong>.<br>
+                - Tâm chuỗi là \(x_0 = 5\). Khoảng cách từ tâm đến \(x=2\) là 3 (Hội tụ \(\Rightarrow R \ge 3\)). Khoảng cách từ tâm đến \(x=10\) là 5 (Phân kỳ \(\Rightarrow R \le 5\)). Vậy A đúng.<br>
+                - B đúng vì khoảng cách là \(|2.5 - 5| = 2.5 < 3 \le R\).<br>
+                - C đúng vì khoảng cách là \(|-1 - 5| = 6 > 5 \ge R\).<br>
+                - D đúng vì ta chỉ kẹp được R, không biết R bằng mấy.<br>
+                - E đúng vì tại \(x=3\) (k/c = 2 < 3), chuỗi HT tuyệt đối, chuỗi đạo hàm giữ nguyên bán kính nên cũng HT.<br>
+                - F sai vì nếu \(R = 3\), điểm \(x=2\) và \(x=8\) nằm ở mút, chuỗi lũy thừa không đảm bảo hội tụ đều nếu chạm mút.</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,D,E">
+                <div class="question-text">Câu 12: Trong các chuỗi số sau đây, những chuỗi nào là chuỗi <strong>BÁN HỘI TỤ</strong>? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q12_de3" value="A"> A. \(\sum_{n=2}^{\infty} \frac{(-1)^n \ln n}{n}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de3" value="B"> B. \(\sum_{n=2}^{\infty} \frac{\cos(n\pi)}{\ln n}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de3" value="C"> C. \(\sum_{n=1}^{\infty} \frac{(-1)^n \sin n}{n^3}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de3" value="D"> D. \(\sum_{n=1}^{\infty} (-1)^n \left(1 - \cos \frac{1}{\sqrt{n}}\right)\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de3" value="E"> E. \(\sum_{n=1}^{\infty} \frac{(-1)^n n}{n^2+1}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de3" value="F"> F. \(\sum_{n=1}^{\infty} \frac{(-1)^n e^n}{n^2}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, D, E</strong>.<br>
+                - (B) chứa \(\cos(n\pi) = (-1)^n\). Trị tuyệt đối là \(\sum 1/\ln n\) (Phân kỳ), đan dấu (Hội tụ) \(\Rightarrow\) Bán hội tụ.<br>
+                - (D) Trị tuyệt đối \(|a_n| = 1 - \cos(1/\sqrt{n}) \sim \frac{1}{2n}\) phân kỳ. Nhưng phần đan dấu thỏa Leibniz nên Hội tụ \(\Rightarrow\) Bán hội tụ.<br>
+                - (C) Hội tụ tuyệt đối vì \(\alpha = 3 > 1\). (F) Phân kỳ vi phạm điều kiện cần.</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C,E">
+                <div class="question-text">Câu 13: Cho hàm \(f(x)\) tuần hoàn chu kì \(2\pi\). Xét lý thuyết chuỗi Fourier, các mệnh đề nào <strong>ĐÚNG</strong>? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q13_de3" value="A"> A. Nếu \(f(x)\) là hàm chẵn thì các hệ số \(b_n = 0\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de3" value="B"> B. Nếu \(f(x)\) là hàm lẻ thì các hệ số \(a_0 = a_n = 0\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de3" value="C"> C. Tại điểm gián đoạn \(x_0\), tổng chuỗi bằng \(\frac{f(x_0^+) + f(x_0^-)}{2}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de3" value="D"> D. Chuỗi Fourier của \(f(x)\) luôn luôn hội tụ về \(f(x)\) tại mọi điểm \(x\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de3" value="E"> E. Nếu \(f(x) = x^2\) trên \((-\pi, \pi)\), thì \(b_n = 0\) với mọi \(n\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de3" value="F"> F. Mọi hàm lẻ đều có khai triển Fourier chỉ chứa các hàm \(\cos(nx)\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C, E</strong>.<br>
+                - (D) sai vì tại điểm gián đoạn chuỗi hội tụ về trung bình cộng chứ không bằng giá trị \(f(x_0)\). Thậm chí có những chuỗi Fourier phân kỳ nếu không thỏa mãn Đk Dirichlet.<br>
+                - (F) sai ngược kiến thức. Hàm lẻ thì chỉ chứa hàm \(\sin(nx)\).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="B,C,D,E">
+                <div class="question-text">Câu 14: Cho hai chuỗi số dương \(\sum a_n\) và \(\sum b_n\). Những khẳng định nào <strong>ĐÚNG</strong>? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q14_de3" value="A"> A. Nếu \(\lim \frac{a_n}{b_n} = \infty\) và \(\sum b_n\) hội tụ thì \(\sum a_n\) hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de3" value="B"> B. Nếu \(\lim \frac{a_n}{b_n} = 0\) và \(\sum b_n\) hội tụ thì \(\sum a_n\) hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de3" value="C"> C. Khi dùng tiêu chuẩn D'Alembert, nếu \(\lim \frac{a_{n+1}}{a_n} = 1\) thì chưa thể kết luận.</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de3" value="D"> D. Chuỗi Riemann \(\sum \frac{1}{n^\alpha}\) hội tụ khi \(\alpha > 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de3" value="E"> E. Nếu \(a_n < b_n\) và \(\sum a_n\) phân kỳ thì \(\sum b_n\) phân kỳ.</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de3" value="F"> F. Nếu \(\lim \sqrt[n]{a_n} = 1.01\) thì chuỗi \(\sum a_n\) hội tụ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>B, C, D, E</strong>.<br>
+                - (A) sai vì \(\lim = \infty\) nghĩa là \(a_n \gg b_n\), \(b_n\) HT không cứu được \(a_n\).<br>
+                - (F) sai vì \(\lim = 1.01 > 1\), theo Tiêu chuẩn Cauchy thì chuỗi Phân kỳ.</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C,D">
+                <div class="question-text">Câu 15: Xét các tính chất của hàm số và chuỗi sinh ra từ chuỗi gốc \(\sum_{n=0}^{\infty} x^n = \frac{1}{1-x}\) (\(|x|<1\)). Các mệnh đề nào <strong>ĐÚNG</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q15_de3" value="A"> A. \(\sum_{n=1}^{\infty} x^n = \frac{x}{1-x}\) với \(|x| < 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de3" value="B"> B. \(\sum_{n=1}^{\infty} nx^{n-1} = \frac{1}{(1-x)^2}\) với \(|x| < 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de3" value="C"> C. \(\sum_{n=1}^{\infty} \frac{x^{n+1}}{n+1} = -\ln(1-x) - x\) với \(|x| < 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de3" value="D"> D. \(\sum_{n=1}^{\infty} nx^n = \frac{x}{(1-x)^2}\) với \(|x| < 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de3" value="E"> E. Chuỗi đạo hàm có miền hội tụ (kể cả 2 mút) luôn giống y hệt miền hội tụ của chuỗi gốc.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C, D</strong>.<br>
+                - (A) Rút phần tử \(n=0\) (bằng 1) ra, ta có \(\frac{1}{1-x} - 1 = \frac{x}{1-x}\).<br>
+                - (B) Lấy đạo hàm 2 vế của chuỗi gốc.<br>
+                - (C) Lấy tích phân của chuỗi \(\sum_{n=1}^\infty x^n = \frac{x}{1-x}\).<br>
+                - (E) Sai vì khi đạo hàm, khoảng hội tụ \((-R, R)\) được giữ nguyên, nhưng tính chất hội tụ tại 2 ĐẦU MÚT có thể bị thay đổi.</div>
+            </div>
+
+            <button type="button" class="submit-btn" onclick="submitExam('de-3')">NỘP BÀI & XEM ĐIỂM ĐỀ 3</button>
+            <div class="result-box"></div>
+        </div>
+
+        <!-- ĐỀ SỐ 4 -->
+        <div id="de-4" class="exam-data" style="display: none;">
+            <div class="exam-info">
+                <strong>📋 Cấu trúc Đề 4 (Form chuẩn Đề Ôn Tập Bách Khoa):</strong><br>
+                - <strong>Câu 1-10:</strong> Trắc nghiệm 1 lựa chọn. Chuyên đề Chuỗi lũy thừa, Khai triển Taylor, Fourier.<br>
+                - <strong>Câu 11-15:</strong> Chọn nhiều đáp án. Phân tích mệnh đề lý thuyết hóc búa.<br>
+                - Điểm số: Mỗi câu 2 điểm. Tổng: 30 điểm. Chúc bạn làm bài tốt!<br>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">PHẦN I: TRẮC NGHIỆM 1 LỰA CHỌN</h3>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 1: Với giá trị nào của \(r\) thì chuỗi số \(\sum_{n=1}^{\infty} \frac{(-1)^n n^2}{n^r+n+4}\) là chuỗi BÁN HỘI TỤ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q1_de4" value="A"> A. \(r > 3\)</label>
+                    <label class="option-label"><input type="radio" name="q1_de4" value="B"> B. \(2 < r \le 3\)</label>
+                    <label class="option-label"><input type="radio" name="q1_de4" value="C"> C. \(r > 2\)</label>
+                    <label class="option-label"><input type="radio" name="q1_de4" value="D"> D. \(2 < r < 3\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Lấy trị tuyệt đối, số hạng tổng quát tương đương với \(\frac{n^2}{n^r} = \frac{1}{n^{r-2}}\). Để chuỗi HTTĐ thì \(r-2 > 1 \Rightarrow r > 3\). Để chuỗi đan dấu gốc HT theo Leibniz thì \(r-2 > 0 \Rightarrow r > 2\). Vậy để BÁN HT thì chuỗi trị tuyệt đối phải phân kỳ, tức là \(r-2 \le 1 \Rightarrow r \le 3\). Kết hợp lại ta có \(2 < r \le 3\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 2: Tìm miền hội tụ của chuỗi hàm số \(\sum_{n=1}^{\infty} \frac{3n^2+2}{(-6)^n} \left(\frac{6x-1}{x+1}\right)^n\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q2_de4" value="A"> A. \((5/12, +\infty)\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de4" value="B"> B. \((-\infty, -5/12)\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de4" value="C"> C. \((-5/12, +\infty)\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de4" value="D"> D. \((-\infty, 5/12)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Đặt \(X = \frac{6x-1}{x+1}\), chuỗi là \(\sum \frac{3n^2+2}{(-6)^n} X^n\). Bán kính hội tụ theo biến X là \(R = \lim \frac{|a_n|}{|a_{n+1}|} = 6\). Vậy \(-6 < \frac{6x-1}{x+1} < 6\). Giải hệ bpt: \(\frac{6x-1}{x+1} > -6 \Rightarrow \frac{12x+5}{x+1} > 0\) và \(\frac{6x-1}{x+1} < 6 \Rightarrow \frac{-7}{x+1} < 0 \Rightarrow x+1 > 0\). Kết hợp lại được \(x > -5/12\). Tại các mút \(\pm 6\) chuỗi phân kỳ.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 3: Xét chuỗi lũy thừa \(S(x) = \sum_{n=1}^{\infty} \frac{x^n}{\sqrt{n \ln(n^2+1)}}\). Chọn khẳng định đúng:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q3_de4" value="A"> A. \(S(1)\) PK, \(S(-1)\) PK</label>
+                    <label class="option-label"><input type="radio" name="q3_de4" value="B"> B. \(S(1)\) HT, \(S(-1)\) HT</label>
+                    <label class="option-label"><input type="radio" name="q3_de4" value="C"> C. \(S(1)\) HT, \(S(-1)\) PK</label>
+                    <label class="option-label"><input type="radio" name="q3_de4" value="D"> D. \(S(1)\) PK, \(S(-1)\) HT</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Dễ thấy bán kính \(R=1\). Tại \(x=1\), chuỗi là \(\sum \frac{1}{\sqrt{n\ln(n^2+1)}} \sim \sum \frac{1}{\sqrt{2n\ln n}}\). Theo tiêu chuẩn tích phân, \(\int \frac{1}{\sqrt{x\ln x}}dx = 2\sqrt{\ln x} \to \infty\) nên chuỗi Phân kỳ. Tại \(x=-1\), chuỗi đan dấu thỏa mãn Leibniz nên Hội tụ.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 4: Tính khai triển thành chuỗi Maclaurin và Bán kính hội tụ \(R\) của hàm số \(f(x) = x^2 \sin(x^3)\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q4_de4" value="A"> A. \(\sum_{n=1}^\infty \frac{(-1)^{n-1}}{(2n-1)!} x^{2n+1}, R=\infty\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de4" value="B"> B. \(\sum_{n=1}^\infty \frac{(-1)^{n-1}}{(2n-1)!} x^{6n-1}, R=1\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de4" value="C"> C. \(\sum_{n=1}^\infty \frac{(-1)^{n-1}}{(2n-1)!} x^{6n-1}, R=\infty\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de4" value="D"> D. \(\sum_{n=1}^\infty \frac{(-1)^{n-1}}{(2n-1)!} x^{2n+1}, R=1\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Ta có \(\sin t = \sum_{n=1}^\infty \frac{(-1)^{n-1}}{(2n-1)!} t^{2n-1}\) với \(R=\infty\). Thay \(t = x^3\) ta được \(\sin(x^3) = \sum_{n=1}^\infty \frac{(-1)^{n-1}}{(2n-1)!} x^{6n-3}\). Nhân thêm \(x^2\) bên ngoài, số mũ trở thành \(6n-1\). Bán kính \(R\) vẫn là \(\infty\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 5: Biết chuỗi số \(\sum_{n=1}^{\infty} \frac{\sin(n) + n^\alpha}{n^3}\) phân kỳ. Mệnh đề nào đúng về giá trị \(\alpha\):</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q5_de4" value="A"> A. \(\alpha \neq 2\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de4" value="B"> B. \(\alpha = 2\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de4" value="C"> C. \(\alpha < 2\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de4" value="D"> D. \(\alpha \ge 2\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Chuỗi tách làm 2 phần: \(\sum \frac{\sin n}{n^3}\) luôn hội tụ tuyệt đối (vì \(|\frac{\sin n}{n^3}| \le \frac{1}{n^3}\)). Vậy để tổng phân kỳ thì chuỗi thứ hai \(\sum \frac{n^\alpha}{n^3} = \sum \frac{1}{n^{3-\alpha}}\) phải phân kỳ. Điều này xảy ra khi \(3-\alpha \le 1 \Rightarrow \alpha \ge 2\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 6: Chuỗi số nào sau đây là chuỗi HỘI TỤ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q6_de4" value="A"> A. \(\sum_{n=1}^\infty (-1)^n \cos\left(\frac{1}{n}\right)\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de4" value="B"> B. \(\sum_{n=1}^\infty (-1)^n \cos(n)\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de4" value="C"> C. \(\sum_{n=1}^\infty (-1)^n \sin\left(\frac{1}{n}\right)\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de4" value="D"> D. \(\sum_{n=1}^\infty \sin\left(\frac{1}{n}\right)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Câu A phân kỳ vì \(\lim a_n = \pm 1 \neq 0\). Câu B phân kỳ vì không có giới hạn. Câu D là chuỗi dương tương đương với \(\sum 1/n\) phân kỳ. Câu C là chuỗi đan dấu, dãy \(a_n = \sin(1/n)\) dương, giảm và tiến về 0, nên Hội tụ theo Leibniz.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 7: Khai triển hàm số \(y = \frac{x-10}{x^2-2x-8}\) thành chuỗi Taylor trong lân cận điểm \(x_0 = 1\) ta được:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q7_de4" value="A"> A. \(\sum_{n=0}^\infty \frac{2(-1)^n - 1}{3^{n+1}} (x-1)^n\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de4" value="B"> B. \(\sum_{n=0}^\infty \frac{2(-1)^n + 1}{3^{n+1}} (x-1)^n\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de4" value="C"> C. \(\sum_{n=1}^\infty \frac{2(-1)^{n+1} + 1}{3^{n+1}} (x-1)^n\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de4" value="D"> D. \(\sum_{n=1}^\infty \frac{2(-1)^n - 1}{3^{n+1}} (x-1)^n\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Phân tích mẫu: \((x-4)(x+2)\). Tách thành phân thức đơn giản: \(y = \frac{-1}{x-4} + \frac{2}{x+2}\). Đặt \(t = x-1 \Rightarrow x = t+1\). Khi đó \(y = \frac{-1}{t-3} + \frac{2}{t+3} = \frac{1}{3(1-t/3)} + \frac{2}{3(1+t/3)}\). Áp dụng chuỗi Maclaurin cho \(\frac{1}{1-u}\), gộp lại ta được hệ số đúng là \(\frac{2(-1)^n + 1}{3^{n+1}}\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 8: Hàm \(\frac{1}{(1-x)^2}\) có chuỗi Maclaurin là \(\sum_{n=0}^\infty (n+1)x^n\) với \(|x|<1\). Khi đó, giá trị của \(\sum_{n=0}^\infty \frac{(-1)^n(n+1)}{3^n}\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q8_de4" value="A"> A. \(9/4\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de4" value="B"> B. \(-9/4\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de4" value="C"> C. \(9/16\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de4" value="D"> D. \(-9/16\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Dễ dàng nhận ra chuỗi số cần tính chính là giá trị của chuỗi hàm tại điểm \(x = -1/3\). Thay \(x = -1/3\) vào hàm số sinh ra nó: \(S = \frac{1}{(1 - (-1/3))^2} = \frac{1}{(4/3)^2} = \frac{9}{16}\).</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 9: Nếu chuỗi số \(\sum_{n=1}^\infty a_n 2^n\) phân kỳ thì chuỗi \(\sum_{n=1}^\infty a_n (-4)^n\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q9_de4" value="A"> A. Hội tụ tuyệt đối</label>
+                    <label class="option-label"><input type="radio" name="q9_de4" value="B"> B. Bán hội tụ</label>
+                    <label class="option-label"><input type="radio" name="q9_de4" value="C"> C. Phân kỳ</label>
+                    <label class="option-label"><input type="radio" name="q9_de4" value="D"> D. Chưa thể kết luận</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Chuỗi \(\sum a_n x^n\) phân kỳ tại \(x=2\) chứng tỏ bán kính hội tụ \(R \le 2\). Tại \(x=-4\), ta có khoảng cách \(|-4| = 4 > R\). Theo định lý Abel, tại điểm nằm ngoài khoảng hội tụ thì chuỗi chắc chắn Phân kỳ.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 10: Cho hàm \(f(x)\) tuần hoàn chu kì \(2\pi\) có \(f(x) = -2\) khi \(-\pi < x \le 0\); và \(f(x) = 2\) khi \(0 < x \le \pi\). Hệ số Fourier \(b_n\) của hàm số là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q10_de4" value="A"> A. \(b_n = -\frac{2}{n\pi}((-1)^n-1)\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de4" value="B"> B. \(b_n = \frac{4}{n\pi}((-1)^n-1)\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de4" value="C"> C. \(b_n = -\frac{4}{n\pi}((-1)^n+1)\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de4" value="D"> D. \(b_n = -\frac{4}{n\pi}((-1)^n-1)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Hàm số \(f(x)\) là hàm lẻ nên chỉ có hệ số \(b_n\). \(b_n = \frac{2}{\pi} \int_0^\pi 2 \sin(nx)dx = \frac{4}{\pi} \left[ \frac{-\cos(nx)}{n} \right]_0^\pi = \frac{4}{n\pi} (1 - \cos n\pi) = \frac{4}{n\pi}(1 - (-1)^n)\). Khai triển dấu trừ ra ngoài ta được dạng tương đương là \(-\frac{4}{n\pi}((-1)^n - 1)\).</div>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem;">PHẦN II: TRẮC NGHIỆM NHIỀU LỰA CHỌN</h3>
+            <p style="color: #ef4444; font-style: italic;">* Chú ý: Chọn TẤT CẢ các mệnh đề đúng. Sai/Thiếu 1 ý là 0 điểm.</p>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C,F">
+                <div class="question-text">Câu 11: Xét hàm số \(f(x) = \frac{x^2+1}{(1-x)^2(1+x)}\). Khai triển Maclaurin của hàm số này có các tính chất nào sau đây là <strong>ĐÚNG</strong>? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q11_de4" value="A"> A. Khai triển có dạng \(\sum_{n=0}^{\infty} \left(n + \frac{1}{2} + \frac{1}{2}(-1)^n\right)x^n\) với \(|x| < 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de4" value="B"> B. Có thể viết lại dưới dạng \(1 + \sum_{n=1}^{\infty} \left(n + \frac{1}{2} + \frac{1}{2}(-1)^n\right)x^n\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de4" value="C"> C. Bán kính hội tụ của chuỗi sinh ra là \(R = 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de4" value="D"> D. Hệ số \(a_0\) của chuỗi Maclaurin là \(1/2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de4" value="E"> E. Hệ số \(a_2\) của chuỗi Maclaurin là \(2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de4" value="F"> F. Hệ số \(a_3\) của chuỗi Maclaurin là \(3\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C, F</strong>.<br>
+                Tách mẫu số: \(f(x) = \frac{-1/2}{1-x} + \frac{1}{(1-x)^2} + \frac{1/2}{1+x}\). Áp dụng các khai triển cơ bản, ta gộp hệ số của \(x^n\) lại thành \((n + \frac{1}{2} + \frac{1}{2}(-1)^n)\). (Ý A và B đúng). Do các phân số thành phần có \(R=1\) nên Bán kính tổng hợp \(R=1\) (Ý C đúng). Thay \(n=0 \Rightarrow a_0 = 1\) (Ý D sai). Thay \(n=2 \Rightarrow a_2 = 3\) (Ý E sai). Thay \(n=3 \Rightarrow a_3 = 3 + 1/2 - 1/2 = 3\) (Ý F đúng).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,D">
+                <div class="question-text">Câu 12: Cho 2 chuỗi số dương \(\sum_{n=1}^\infty a_n\) và \(\sum_{n=1}^\infty b_n\). Khẳng định nào sau đây là <strong>ĐÚNG</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q12_de4" value="A"> A. Nếu \(\lim \frac{a_n}{b_n} = 0\) và \(\sum b_n\) hội tụ thì \(\sum a_n\) hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de4" value="B"> B. Nếu \(\lim \frac{a_n}{b_n} = \infty\) và \(\sum b_n\) phân kỳ thì \(\sum a_n\) phân kỳ.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de4" value="C"> C. Nếu \(\lim \sqrt[n]{a_n} = 1\) thì chuỗi \(\sum a_n\) chắc chắn phân kỳ.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de4" value="D"> D. Nếu chuỗi \(\sum a_n\) hội tụ thì chuỗi \(\sum a_n^2\) cũng hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de4" value="E"> E. Nếu chuỗi đan dấu \(\sum (-1)^n a_n\) hội tụ thì \(\sum a_n\) chắc chắn phân kỳ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, D</strong>.<br>
+                - Ý A và B là hệ quả trực tiếp của Tiêu chuẩn So sánh giới hạn đối với số 0 và Vô cực.<br>
+                - Ý C sai vì TC Cauchy ra \(L=1\) thì chưa thể kết luận.<br>
+                - Ý D đúng vì do \(a_n > 0\) và HT nên \(\lim a_n = 0\), từ một lúc nào đó \(a_n < 1 \Rightarrow a_n^2 < a_n\), dùng TC so sánh suy ra HT.<br>
+                - Ý E sai, ví dụ \(\sum (-1)^n / n^2\) hội tụ và chuỗi dương của nó cũng hội tụ.</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="D,E,F">
+                <div class="question-text">Câu 13: Xét chuỗi hàm số \(S(x) = \sum_{n=1}^{\infty} \frac{(2x+1)^{2n}}{n+1}\). Khẳng định nào sau đây là <strong>ĐÚNG</strong>? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q13_de4" value="A"> A. Chuỗi hội tụ tại \(x = -2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de4" value="B"> B. Hàm \(S(x)\) liên tục tại \(x = 0\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de4" value="C"> C. Hàm \(S(x)\) liên tục tại \(x = -1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de4" value="D"> D. Hàm \(S(x)\) có đạo hàm tại \(x = -1/3\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de4" value="E"> E. Tập hội tụ của chuỗi là khoảng \((-1, 0)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de4" value="F"> F. Tại \(x = -1/2\), chuỗi hội tụ và có tổng bằng \(0\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>D, E, F</strong>.<br>
+                Đặt \(y = (2x+1)^2\), bán kính của y là 1. Để HT thì \(|y| < 1 \Rightarrow (2x+1)^2 < 1 \Rightarrow -1 < x < 0\). (Ý E đúng). Tại 2 mút \(x=0\) và \(x=-1\), \(y=1\), chuỗi trở thành \(\sum 1/(n+1)\) phân kỳ. Suy ra hàm không liên tục tại 0 và -1 (Ý B, C sai). \(x = -1/3 \in (-1, 0)\) nằm trong miền hội tụ nên khả vi (Ý D đúng). Tại \(x=-1/2\), tử số = 0 nên tổng bằng 0 (Ý F đúng).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C,F">
+                <div class="question-text">Câu 14: Xét chuỗi hàm số lượng giác \(S(x) = \sum_{n=1}^{\infty} \frac{\sin(nx)}{n^2}\). Các mệnh đề nào sau đây <strong>ĐÚNG</strong>? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q14_de4" value="A"> A. Chuỗi \(S(x)\) hội tụ tuyệt đối với mọi \(x \in \mathbb{R}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de4" value="B"> B. Chuỗi \(S(x)\) hội tụ đều trên toàn bộ trục số thực \(\mathbb{R}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de4" value="C"> C. Hàm tổng \(S(x)\) liên tục trên \(\mathbb{R}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de4" value="D"> D. Có thể lấy đạo hàm từng phần để được \(S'(x) = \sum_{n=1}^\infty \frac{\cos(nx)}{n}\) trên \(\mathbb{R}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de4" value="E"> E. Tại \(x = \pi/2\), chuỗi trên trở thành chuỗi đan dấu hoàn toàn.</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de4" value="F"> F. \(\int_0^\pi S(x)dx = \sum_{n=1}^\infty \frac{1 - (-1)^n}{n^3}\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C, F</strong>.<br>
+                Vì \(|a_n(x)| \le 1/n^2\) hội tụ, theo Weierstrass chuỗi HT tuyệt đối và HT đều trên R (Ý A, B đúng). Do các phần tử liên tục và chuỗi HT đều nên Hàm tổng liên tục (Ý C đúng). Chuỗi đạo hàm \(\sum \frac{\cos nx}{n}\) không hội tụ đều (vì PK tại \(x=0\)) nên không thể lấy đạo hàm từng phần trên toàn R (Ý D sai). Tại \(x=\pi/2\), hàm sin lặp lại: 1, 0, -1, 0,... không phải chuỗi đan dấu nghiêm ngặt (Ý E sai). Tích phân \(\int_0^\pi \sin(nx)dx = \frac{1-(-1)^n}{n}\), nhân thêm \(1/n^2\) ta được kết quả F đúng.</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,C,D,E">
+                <div class="question-text">Câu 15: Cho hàm \(f(x)\) tuần hoàn chu kì \(2\pi\), với \(f(x) = 1\) khi \(-\pi < x \le 0\) và \(f(x) = 0\) khi \(0 < x \le \pi\). Mệnh đề nào sau đây <strong>ĐÚNG</strong> về chuỗi Fourier của \(f(x)\)? <span class="multi-choice-badge">6 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q15_de4" value="A"> A. Hệ số \(a_0 = 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de4" value="B"> B. Chuỗi Fourier của \(f(x)\) chỉ chứa các hàm \(\sin(nx)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de4" value="C"> C. Hệ số \(b_n = \frac{(-1)^n - 1}{n\pi}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de4" value="D"> D. Tại \(x = 0\), tổng của chuỗi Fourier bằng \(1/2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de4" value="E"> E. Tại \(x = \pi/2\), tổng của chuỗi Fourier bằng \(0\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de4" value="F"> F. Hàm \(f(x)\) là một hàm chẵn.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, C, D, E</strong>.<br>
+                - \(a_0 = \frac{1}{\pi} \int_{-\pi}^0 1 dx = 1\) (A đúng).<br>
+                - \(b_n = \frac{1}{\pi} \int_{-\pi}^0 \sin(nx) dx = \frac{1}{\pi} [\frac{-\cos nx}{n}]_{-\pi}^0 = \frac{(-1)^n - 1}{n\pi}\) (C đúng).<br>
+                - Hàm không chẵn không lẻ, chuỗi có cả hằng số \(a_0/2 = 1/2\) nên B và F sai.<br>
+                - Tại \(x=0\) là điểm gián đoạn, \(S = \frac{f(0^+)+f(0^-)}{2} = \frac{0+1}{2} = 1/2\) (D đúng).<br>
+                - Tại \(x=\pi/2\) hàm liên tục và bằng 0 (E đúng).</div>
+            </div>
+
+            <button type="button" class="submit-btn" onclick="submitExam('de-4')">NỘP BÀI & XEM ĐIỂM ĐỀ 4</button>
+            <div class="result-box"></div>
+        </div>
+
+        <!-- ĐỀ SỐ 5 -->
+        <div id="de-5" class="exam-data" style="display: none;">
+            <div class="exam-info">
+                <strong>📋 Cấu trúc Đề 5 (Mức độ Khó - Trích xuất từ Đề cương Thầy Chủ Nhiệm):</strong><br>
+                - <strong>Câu 1-10:</strong> Trắc nghiệm 1 lựa chọn. Chuyên đề bẫy lý thuyết, hội tụ hàm logarit/lượng giác và Taylor.<br>
+                - <strong>Câu 11-15:</strong> Chọn nhiều đáp án (Hệ thống mệnh đề phức hợp, yêu cầu hiểu sâu bản chất).<br>
+                - Điểm số: Mỗi câu 2 điểm. Tổng: 30 điểm. Hãy cẩn thận với các câu hỏi bẫy!<br>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">PHẦN I: TRẮC NGHIỆM 1 LỰA CHỌN</h3>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 1: Xét mệnh đề về chuỗi số dương và chuỗi đan dấu. Khẳng định nào sau đây là ĐÚNG?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q1_de5" value="A"> A. Nếu \(0 \le b_n \le a_n\) và \(\sum b_n\) hội tụ thì \(\sum a_n\) hội tụ.</label>
+                    <label class="option-label"><input type="radio" name="q1_de5" value="B"> B. Nếu \(\lim_{n \to \infty} a_n = 0\) thì \(\sum a_n\) chắc chắn hội tụ.</label>
+                    <label class="option-label"><input type="radio" name="q1_de5" value="C"> C. Chuỗi \(\sum_{n=1}^{\infty} (n - \sin 1)\) là chuỗi hội tụ.</label>
+                    <label class="option-label"><input type="radio" name="q1_de5" value="D"> D. Nếu \(\sum a_n\) hội tụ với \(a_n > 0\) thì chuỗi đan dấu \(\sum (-1)^n a_n\) hội tụ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. <br>
+                - A sai (phải là \(a_n \le b_n\)).<br>
+                - B sai (Đây chỉ là điều kiện cần, ví dụ chuỗi \(1/n\) có lim = 0 nhưng phân kỳ).<br>
+                - C sai vì \(\lim (n - \sin 1) = \infty \neq 0\).<br>
+                - D ĐÚNG. Vì \(\sum a_n\) hội tụ (\(a_n > 0\)), nên chuỗi \(\sum (-1)^n a_n\) hội tụ tuyệt đối, do đó nó chắc chắn hội tụ. [Trích Câu 3 - Mã đề 1 MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 2: Với giá trị nào của tham số \(p\) thì chuỗi số \(\sum_{n=1}^{\infty} \frac{e^n}{(2n + e^{2n})^p}\) hội tụ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q2_de5" value="A"> A. \(-1 < p < 1\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de5" value="B"> B. \(p > 1\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de5" value="C"> C. \(p \ge 1\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de5" value="D"> D. \(p > 1/2\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Khi \(n \to \infty\), đa thức \(2n\) không đáng kể so với hàm mũ \(e^{2n}\). Ta có \(a_n \sim \frac{e^n}{(e^{2n})^p} = \frac{e^n}{e^{2pn}} = \frac{1}{e^{(2p-1)n}}\). Đây là cấp số nhân lùi vô hạn với công bội \(q = 1/e^{2p-1}\). Chuỗi hội tụ khi \(q < 1 \Rightarrow 2p - 1 > 0 \Rightarrow p > 1/2\). [Trích Câu 7 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 3: Biết chuỗi số \(\sum_{n=1}^{\infty} n^2 \sin\left(\frac{1}{n^\alpha}\right)\) hội tụ. Mệnh đề nào đúng về giá trị \(\alpha\)?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q3_de5" value="A"> A. \(\alpha > 1\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de5" value="B"> B. \(\alpha < 2\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de5" value="C"> C. \(\alpha \neq 3\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de5" value="D"> D. \(\alpha > 3\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Góc tiến về 0, áp dụng VCB tương đương: \(\sin(1/n^\alpha) \sim 1/n^\alpha\). Do đó \(a_n \sim \frac{n^2}{n^\alpha} = \frac{1}{n^{\alpha - 2}}\). Theo định lý chuỗi Riemann, để hội tụ thì số mũ \(\alpha - 2 > 1 \Rightarrow \alpha > 3\). [Trích Câu 11 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 4: Tìm miền hội tụ của chuỗi hàm số lượng giác / phân thức sau: \(\sum_{n=1}^{\infty} \frac{3n^2+2}{(-6)^n} \left(\frac{6x-1}{x+1}\right)^n\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q4_de5" value="A"> A. \((5/12, +\infty)\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de5" value="B"> B. \((-\infty, -5/12)\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de5" value="C"> C. \((-5/12, +\infty)\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de5" value="D"> D. \((-\infty, 5/12)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Đặt \(X = \frac{6x-1}{x+1}\). Chuỗi trở thành \(\sum \frac{3n^2+2}{(-6)^n} X^n\). <br>Bán kính \(R = \lim \left| \frac{a_n}{a_{n+1}} \right| = 6\). Do đó \(-6 < \frac{6x-1}{x+1} < 6\). Giải bất phương trình này ta được \(x > -5/12\). Xét tại 2 mút thì chuỗi \(\sum (3n^2+2)\) phân kỳ do vi phạm điều kiện cần. [Trích Câu 18 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 5: Tính khai triển thành chuỗi Taylor của hàm \(f(x) = \frac{x-10}{x^2-2x-8}\) tại điểm \(x_0 = 1\):</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q5_de5" value="A"> A. \(\sum_{n=0}^{\infty} \frac{2(-1)^n - 1}{3^{n+1}} (x-1)^n\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de5" value="B"> B. \(\sum_{n=0}^{\infty} \frac{2(-1)^n + 1}{3^{n+1}} (x-1)^n\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de5" value="C"> C. \(\sum_{n=1}^{\infty} \frac{2(-1)^{n+1} + 1}{3^{n+1}} (x-1)^n\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de5" value="D"> D. \(\sum_{n=1}^{\infty} \frac{2(-1)^n - 1}{3^{n+1}} (x-1)^n\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Tách phân thức: \(\frac{x-10}{(x-4)(x+2)} = \frac{-1}{x-4} + \frac{2}{x+2}\).<br>Để khai triển tại \(x_0=1\), đặt \(t = x-1\), ta có: \(f = \frac{-1}{t-3} + \frac{2}{t+3} = \frac{1}{3(1 - t/3)} + \frac{2}{3(1 + t/3)}\).<br>Dùng công thức chuỗi CSN lùi vô hạn \(\frac{1}{1-u} = \sum u^n\), ghép lại ta sẽ ra được hệ số \(\frac{2(-1)^n + 1}{3^{n+1}}\). [Trích Câu 22 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 6: Biết hàm \(\frac{1}{(1-x)^2}\) có chuỗi Maclaurin là \(\sum_{n=0}^{\infty} (n+1)x^n\) với \(|x| < 1\). Hãy tính tổng của chuỗi số: \(\sum_{n=0}^{\infty} \frac{(-1)^n(n+1)}{3^n}\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q6_de5" value="A"> A. \(9/4\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de5" value="B"> B. \(-9/4\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de5" value="C"> C. \(9/16\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de5" value="D"> D. \(-9/16\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Nhận diện ngay chuỗi số cần tính chính là thay \(x = -1/3\) vào khai triển Maclaurin của đề bài. Vậy Tổng \(S = \frac{1}{(1 - (-1/3))^2} = \frac{1}{(4/3)^2} = \frac{9}{16}\). [Trích Câu 31 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 7: Cho biết chuỗi hàm \(\sum_{n=1}^{\infty} n^2 x^n = \frac{x^2+x}{(1-x)^3}\) (với \(|x| < 1\)). Khi đó, chuỗi hàm \(\sum_{n=1}^{\infty} n^3 x^n\) có tổng là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q7_de5" value="A"> A. \(\frac{x^2+4x+1}{(1-x)^4}\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de5" value="B"> B. \(\frac{x^3+4x^2+x}{(1-x)^3}\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de5" value="C"> C. \(\frac{x^3+4x^2+x}{(1-x)^4}\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de5" value="D"> D. \(\frac{x^2+4x+1}{(1-x)^3}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Đặt \(S(x) = \sum n^2 x^n\). Đạo hàm hai vế ta được: \(S'(x) = \sum n^3 x^{n-1}\). Nhân thêm \(x\) vào hai vế: \(x \cdot S'(x) = \sum n^3 x^n\). Lấy \(\frac{x^2+x}{(1-x)^3}\) đem đạo hàm rồi nhân với \(x\) ta sẽ thu được phân thức ở đáp án C. [Trích Câu 44 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 8: Hệ số \(b_3\) trong khai triển Fourier của hàm tuần hoàn chu kỳ \(2\pi\), \(f(x) = x+1, x \in (-\pi, \pi)\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q8_de5" value="A"> A. \(2\pi/3\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de5" value="B"> B. \(2/3\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de5" value="C"> C. \(\pi/3\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de5" value="D"> D. \(0\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Hàm hằng số 1 là hàm chẵn nên tích phân nhân với \(\sin(3x)\) sẽ bằng 0. Ta chỉ cần tính cho \(x\). Nhớ nhanh công thức \(b_n\) của \(f(x) = x\) là \(\frac{2}{n}(-1)^{n+1}\). Thay \(n=3\) ta có \(\frac{2}{3}(-1)^4 = \frac{2}{3}\). [Trích Câu 26 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 9: Biết hàm \(\ln(x+1)\) có chuỗi Maclaurin là \(\sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n}x^n\). Giá trị của chuỗi \(\sum_{n=1}^{\infty} \frac{(-1)^n}{n 2^{n-1}}\) là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q9_de5" value="A"> A. \(2\ln(3/2)\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de5" value="B"> B. \(-2\ln(3/2)\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de5" value="C"> C. \(\ln(3/2)\)</label>
+                    <label class="option-label"><input type="radio" name="q9_de5" value="D"> D. \(-\ln(3/2)\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Thay \(x = 1/2\) vào chuỗi ta được: \(\ln(3/2) = \sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n 2^n}\). Chuỗi đề bài yêu cầu là \(\sum \frac{(-1)^n}{n 2^{n-1}}\). Rõ ràng chuỗi này bằng \(-2\) nhân với chuỗi ban đầu. Nên kết quả là \(-2\ln(3/2)\). [Trích Câu 33 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 10: Cho hàm số \(f(x) = 1-x\) với \(x \in (-\pi, \pi)\), tuần hoàn chu kì \(2\pi\). Với \(n \ge 1\), giá trị của hệ số \(b_n\) trong khai triển Fourier là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q10_de5" value="A"> A. \(-\frac{(-1)^n}{n}\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de5" value="B"> B. \(\frac{(-1)^n}{n}\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de5" value="C"> C. \(\frac{2(-1)^n}{n}\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de5" value="D"> D. \(-\frac{2(-1)^n}{n}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. \(b_n = \frac{1}{\pi} \int_{-\pi}^\pi (1-x)\sin(nx)dx = -\frac{1}{\pi} \int_{-\pi}^\pi x \sin(nx)dx\) (vì \(1 \cdot \sin(nx)\) là hàm lẻ, tích phân đối xứng bằng 0). Tích phân từng phần ra kết quả: \(\frac{2\cos(n\pi)}{n} = \frac{2(-1)^n}{n}\). [Trích Câu 36 - MI1132]</div>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem;">PHẦN II: TRẮC NGHIỆM NHIỀU LỰA CHỌN</h3>
+            <p style="color: #ef4444; font-style: italic;">* Lưu ý: Chọn TẤT CẢ các mệnh đề đúng. Chấm điểm theo phương thức All-or-Nothing.</p>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C,D">
+                <div class="question-text">Câu 11: Xem xét các định lý về sự hội tụ của chuỗi số. Chọn tất cả các khẳng định <strong>ĐÚNG</strong>: <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q11_de5" value="A"> A. Nếu \(\lim_{n \to \infty} \left( \frac{n+1}{n} \right)^n \frac{a_n}{b_n} = 1\) (với \(a_n, b_n > 0\)) và chuỗi \(\sum b_n\) hội tụ thì \(\sum a_n\) hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de5" value="B"> B. Chuỗi đan dấu \(\sum_{n=1}^\infty (-1)^n a_n\) hội tụ nếu \(\lim_{n \to \infty} a_n = 0\) và \(a_{n+1} \le a_n\).</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de5" value="C"> C. Chuỗi số dương \(S = \sum_{n=1}^\infty a_n\) chắc chắn hội tụ nếu chuỗi \(\sum_{n=1}^\infty 3^n a_n\) hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de5" value="D"> D. Nếu \(a_n > 0\) và \(\sum a_n\) hội tụ thì chuỗi \(\sum (-1)^n a_n\) hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de5" value="E"> E. Nếu chuỗi bình phương \(\sum a_n^2\) hội tụ thì chuỗi \(\sum a_n\) bắt buộc phải hội tụ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C, D</strong>.<br>
+                - A đúng: Giới hạn là \(e \cdot \frac{a_n}{b_n} = 1 \Rightarrow \frac{a_n}{b_n} = \frac{1}{e} \in (0, \infty)\). Theo TCSS 2, hai chuỗi cùng tính chất.<br>
+                - B đúng: Đây là phát biểu chuẩn của định lý Leibniz.<br>
+                - C đúng: Vì \(3^n a_n\) hội tụ nên \(\lim 3^n a_n = 0\), tức là \(a_n\) tiến về 0 rất nhanh (nhanh hơn \(1/3^n\)), chắc chắn HT.<br>
+                - D đúng: Nó hội tụ tuyệt đối \(\Rightarrow\) Hội tụ.<br>
+                - E sai: Phản ví dụ kinh điển \(a_n = \frac{(-1)^n}{\sqrt{n}}\). Khi bình phương lên ra \(1/n\) (phân kỳ), nhưng chuỗi gốc (Leibniz) lại hội tụ! [Trích form Câu 8, 38, 39 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B">
+                <div class="question-text">Câu 12: Đánh giá tính chất <strong>BÁN HỘI TỤ</strong> của các chuỗi số sau đây. Chọn các mệnh đề <strong>ĐÚNG</strong>: <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q12_de5" value="A"> A. Chuỗi \(\sum_{n=1}^{\infty} \frac{(-1)^n n}{n^2+1}\) là chuỗi bán hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de5" value="B"> B. Chuỗi \(\sum_{n=1}^{\infty} \frac{(-1)^n}{1+n^{\alpha-1}}\) bán hội tụ khi và chỉ khi \(1 < \alpha \le 2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de5" value="C"> C. Chuỗi \(\sum_{n=1}^{\infty} (-1)^n \sin\left(\frac{1}{n}\right)\) hội tụ tuyệt đối.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de5" value="D"> D. Chuỗi \(\sum_{n=1}^{\infty} \frac{(-1)^n}{n^4+1}\) là chuỗi bán hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de5" value="E"> E. Chuỗi \(\sum_{n=1}^{\infty} (-1)^n \cos\left(\frac{1}{n}\right)\) là chuỗi bán hội tụ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B</strong>.<br>
+                - A đúng: Trị tuyệt đối là \(\sim 1/n\) phân kỳ, nhưng Leibniz hội tụ.<br>
+                - B đúng: Điều kiện Leibniz là \(\alpha > 1\). Điều kiện trị tuyệt đối phân kỳ là \(\alpha - 1 \le 1 \Rightarrow \alpha \le 2\). Giao lại: \(1 < \alpha \le 2\).<br>
+                - C sai: Trị tuyệt đối \(\sim 1/n\) phân kỳ \(\Rightarrow\) Bán hội tụ chứ không phải HTTĐ.<br>
+                - D sai: Bậc mẫu là 4 \(\Rightarrow\) HTTĐ.<br>
+                - E sai: \(\lim a_n = \cos(0) = 1 \neq 0\), chuỗi Phân kỳ. [Trích Câu 9, 13, 23 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C,E">
+                <div class="question-text">Câu 13: Xét hàm \(f(x)\) tuần hoàn chu kì \(2\pi\) với \(f(x) = -2\) khi \(-\pi < x \le 0\) và \(f(x) = 2\) khi \(0 < x \le \pi\). Gọi \(S(x)\) là tổng của chuỗi Fourier. Khẳng định nào <strong>ĐÚNG</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q13_de5" value="A"> A. Các hệ số \(a_0 = 0\) và \(a_n = 0\) với mọi \(n \ge 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de5" value="B"> B. Các hệ số \(b_n = -\frac{4}{n\pi}((-1)^n - 1)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de5" value="C"> C. Tại điểm \(x = 3\pi\), giá trị của \(S(3\pi) = 0\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de5" value="D"> D. Tại điểm \(x = 2\pi\), giá trị của \(S(2\pi) = 2\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de5" value="E"> E. Mọi hàm lẻ đều có khai triển Fourier chỉ chứa các hàm \(\sin(nx)\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C, E</strong>.<br>
+                - A đúng: Hàm f(x) là hàm lẻ, hệ số \(a_n\) triệt tiêu.<br>
+                - B đúng: \(b_n = \frac{2}{\pi} \int_0^\pi 2 \sin(nx)dx = \frac{4}{\pi} [-\frac{\cos nx}{n}]_0^\pi = \frac{-4}{n\pi}((-1)^n - 1)\).<br>
+                - C đúng: \(x = 3\pi\) tương đương với \(x = \pi\) (do tuần hoàn). Tại đây hàm gián đoạn, \(S(\pi) = \frac{-2 + 2}{2} = 0\).<br>
+                - D sai: \(x = 2\pi\) tương đương \(x = 0\). \(S(0) = \frac{-2 + 2}{2} = 0 \neq 2\). [Trích Câu 29, 45 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C,D">
+                <div class="question-text">Câu 14: Xét chuỗi lũy thừa \(\sum_{n=0}^{\infty} a_n(x-5)^n\). Biết rằng chuỗi này hội tụ tại \(x = 2\) và phân kỳ tại \(x = 10\). Hãy chỉ ra các khẳng định <strong>ĐÚNG</strong>: <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q14_de5" value="A"> A. Bán kính hội tụ \(R\) thỏa mãn điều kiện: \(3 \le R \le 5\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de5" value="B"> B. Miền hội tụ của chuỗi \(\sum_{n=1}^{\infty} \frac{(-1)^n (x+1)^n}{n 7^n}\) là \((-8, 6]\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de5" value="C"> C. Chuỗi ở đề bài chắc chắn hội tụ tại điểm \(x = 2.5\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de5" value="D"> D. Nếu bán kính hội tụ của chuỗi \(\sum a_n x^n\) là 16 thì BKHT của \(\sum a_n x^{2n}\) là 4.</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de5" value="E"> E. Chuỗi ở đề bài chắc chắn hội tụ đều trên đoạn \([-1, 1]\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C, D</strong>.<br>
+                - A đúng: Tâm chuỗi là 5. Từ 5 tới 2 cách 3 \(\Rightarrow R \ge 3\). Từ 5 tới 10 cách 5 \(\Rightarrow R \le 5\).<br>
+                - B đúng: \(R = 7 \Rightarrow -7 < x+1 \le 7 \Rightarrow x \in (-8, 6]\) (Tại mút 6, Leibniz hội tụ).<br>
+                - C đúng: Khoảng cách từ 5 đến 2.5 là 2.5 \(( < 3 \le R)\).<br>
+                - D đúng: \(|x^2| < 16 \Rightarrow |x| < 4\).<br>
+                - E sai: Điểm \(x=-1\) cách tâm 5 một khoảng là 6. Mà \(R \le 5\), do đó tại -1 chuỗi chắc chắn phân kỳ! [Trích form tổng hợp 15, 25, 43 - MI1132]</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,D">
+                <div class="question-text">Câu 15: Liên quan đến khai triển Maclaurin và miền hội tụ, mệnh đề nào sau đây là <strong>ĐÚNG</strong>? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q15_de5" value="A"> A. Khai triển Maclaurin của hàm \(y = x \cos^2 x\) là: \(\frac{x}{2} + \frac{x}{2} \sum_{n=0}^{\infty} \frac{(-4)^n x^{2n}}{(2n)!}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de5" value="B"> B. Tập hội tụ của chuỗi \(\sum_{n=1}^{\infty} \frac{x^n}{\sqrt{n \ln(n^2+1)}}\) là \([-1, 1)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de5" value="C"> C. Khai triển Maclaurin của hàm \(\sin x\) chỉ chứa các lũy thừa bậc chẵn.</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de5" value="D"> D. Chuỗi \(\sum_{n=1}^{\infty} n x^n = \frac{x}{(1-x)^2}\) với mọi \(|x| < 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de5" value="E"> E. Bán kính hội tụ của chuỗi sau khi lấy đạo hàm luôn nhỏ hơn chuỗi gốc.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, D</strong>.<br>
+                - A đúng: Dùng công thức hạ bậc \(x \cdot \frac{1 + \cos 2x}{2}\) rồi khai triển \(\cos 2x\). Hệ số \((-1)^n 2^{2n}\) chính là \((-4)^n\).<br>
+                - B đúng: \(R = 1\). Tại \(x = 1\) phân kỳ (so sánh với \(1/n^{1.5}\)... à khoan, \(\sqrt{n \cdot 2\ln n} \sim \sqrt{n}\), phân kỳ). Tại \(x = -1\) đan dấu hội tụ.<br>
+                - C sai: \(\sin x\) là hàm lẻ nên chỉ chứa lũy thừa BẬC LẺ.<br>
+                - D đúng: Lấy đạo hàm \(\sum x^n\) rồi nhân \(x\).<br>
+                - E sai: BKHT của chuỗi đạo hàm luôn BẰNG chuỗi gốc. [Trích Câu 32, 37 - MI1132]</div>
+            </div>
+
+            <button type="button" class="submit-btn" onclick="submitExam('de-5')">NỘP BÀI & XEM ĐIỂM ĐỀ 5</button>
+            <div class="result-box"></div>
+        </div>
+
+        <!-- ĐỀ SỐ 6 -->
+        <div id="de-6" class="exam-data" style="display: none;">
+            <div class="exam-info">
+                <strong>📋 Cấu trúc Đề 6 (Đề Tổng Ôn Đa Dạng):</strong><br>
+                - <strong>Câu 1-10:</strong> Trắc nghiệm 1 lựa chọn. Bao phủ Chuỗi số, Chuỗi hàm, Khai triển Fourier và Phương trình vi phân cấp 1.<br>
+                - <strong>Câu 11-15:</strong> Chọn nhiều đáp án. Kiểm tra lý thuyết chuyên sâu và kỹ năng phân tích bẫy sai lầm.<br>
+                - Điểm số: Mỗi câu 2 điểm. Tổng: 30 điểm. Chúc bạn thành công!<br>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">PHẦN I: TRẮC NGHIỆM 1 LỰA CHỌN</h3>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 1: Xét sự hội tụ của chuỗi số \(\sum_{n=1}^{\infty} \frac{1}{\sqrt{n}} \left(e^{\frac{\ln 3}{n}} - 1\right)\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q1_de6" value="A"> A. Hội tụ</label>
+                    <label class="option-label"><input type="radio" name="q1_de6" value="B"> B. Phân kỳ</label>
+                    <label class="option-label"><input type="radio" name="q1_de6" value="C"> C. Bán hội tụ</label>
+                    <label class="option-label"><input type="radio" name="q1_de6" value="D"> D. Chưa đủ điều kiện kết luận</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Chuỗi đã cho là chuỗi dương với mọi \(n \ge 1\) [1]. Khi \(n \to +\infty\), ta sử dụng vô cùng bé tương đương: \(e^{\frac{\ln 3}{n}} - 1 \sim \frac{\ln 3}{n}\) [1]. Do đó số hạng tổng quát tương đương với \(\frac{\ln 3}{n^{3/2}}\) [1]. Vì \(\sum \frac{1}{n^{3/2}}\) là chuỗi Riemann hội tụ (\(\alpha = 3/2 > 1\)), nên chuỗi ban đầu hội tụ theo tiêu chuẩn so sánh [1].</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 2: Với giá trị nào của \(p\) thì chuỗi số \(\sum_{n=1}^{\infty} \frac{e^n}{(2n + e^{2n})^p}\) hội tụ?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q2_de6" value="A"> A. \(-1 < p < 1\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de6" value="B"> B. \(p \ge 1\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de6" value="C"> C. \(p > 1\)</label>
+                    <label class="option-label"><input type="radio" name="q2_de6" value="D"> D. \(p > 1/2\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Khi \(n \to \infty\), phần tử lớn nhất dưới mẫu là \(e^{2n}\). Ta có \(a_n \sim \frac{e^n}{(e^{2n})^p} = \frac{1}{e^{(2p-1)n}}\). Đây là chuỗi cấp số nhân với công bội \(q = \frac{1}{e^{2p-1}}\). Để chuỗi hội tụ thì \(q < 1 \Rightarrow 2p-1 > 0 \Rightarrow p > 1/2\) [5, 6].</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 3: Tính tổng của chuỗi số \(\sum_{n=1}^{\infty} \frac{n}{5^n}\).</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q3_de6" value="A"> A. \(1/5\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de6" value="B"> B. \(5/4\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de6" value="C"> C. \(5/16\)</label>
+                    <label class="option-label"><input type="radio" name="q3_de6" value="D"> D. \(16/5\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Xét chuỗi hàm số \(S(x) = \sum_{n=1}^{\infty} n x^n\) [7]. Ta có thể biến đổi \(S(x) = x \sum_{n=1}^{\infty} n x^{n-1} = x \left(\sum_{n=1}^{\infty} x^n\right)' = x \left(\frac{x}{1-x}\right)' = \frac{x}{(1-x)^2}\) [7]. Thay \(x = 1/5\), ta được tổng chuỗi bằng \(\frac{1/5}{(1 - 1/5)^2} = \frac{5}{16}\) [7].</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 4: Khai triển hàm số \(f(x) = \frac{x-10}{x^2 - 2x - 8}\) thành chuỗi Taylor trong lân cận điểm \(x_0 = 1\), ta thu được chuỗi có dạng:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q4_de6" value="A"> A. \(\sum_{n=0}^{\infty} \frac{2(-1)^n - 1}{3^{n+1}} (x - 1)^n\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de6" value="B"> B. \(\sum_{n=0}^{\infty} \frac{2(-1)^n + 1}{3^{n+1}} (x - 1)^n\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de6" value="C"> C. \(\sum_{n=1}^{\infty} \frac{2(-1)^{n+1} + 1}{3^{n+1}} (x - 1)^n\)</label>
+                    <label class="option-label"><input type="radio" name="q4_de6" value="D"> D. \(\sum_{n=1}^{\infty} \frac{2(-1)^n - 1}{3^{n+1}} (x - 1)^n\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Phân tích thành phân thức đơn giản: \(f(x) = \frac{-1}{x-4} + \frac{2}{x+2}\) [8]. Đặt \(t = x-1 \Rightarrow x = t+1\). Khi đó hàm trở thành \(\frac{-1}{t-3} + \frac{2}{t+3} = \frac{1}{3(1 - t/3)} + \frac{2}{3(1 + t/3)}\) [8]. Áp dụng chuỗi Maclaurin cơ bản và gộp lại, ta thu được hệ số chính xác là \(\frac{2(-1)^n + 1}{3^{n+1}}\) [8].</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 5: Cho khai triển Fourier của hàm \(f(x) = -x\) khi \(-\pi < x < 0\), và \(f(x) = 2x\) khi \(0 < x < \pi\) tuần hoàn chu kì \(2\pi\). Hệ số \(a_0\) của chuỗi Fourier là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q5_de6" value="A"> A. \(\pi/2\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de6" value="B"> B. \(\pi\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de6" value="C"> C. \(3\pi/2\)</label>
+                    <label class="option-label"><input type="radio" name="q5_de6" value="D"> D. \(3\pi\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Công thức tính \(a_0 = \frac{1}{\pi} \int_{-\pi}^{\pi} f(x)dx\) [9]. Thay hàm số vào: \(a_0 = \frac{1}{\pi} \left( \int_{-\pi}^{0} -xdx + \int_{0}^{\pi} 2xdx \right) = \frac{1}{\pi} \left( \frac{\pi^2}{2} + \pi^2 \right) = \frac{3\pi}{2}\) [9].</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="B">
+                <div class="question-text">Câu 6: Giải phương trình vi phân sau: \(\sqrt{x + 1}dy + y \ln^2 y dx = 0\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q6_de6" value="A"> A. \(\sqrt{x + 1} - \frac{1}{\ln y} = C\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de6" value="B"> B. \(2\sqrt{x + 1} - \frac{1}{\ln y} + C = 0\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de6" value="C"> C. \(2\sqrt{x + 1} + \ln y = C\)</label>
+                    <label class="option-label"><input type="radio" name="q6_de6" value="D"> D. \(\sqrt{x + 1} - \ln^2 y = C\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án B. Đây là PTVP phân ly biến số. Phân ly ta được \(\frac{dx}{\sqrt{x+1}} = -\frac{dy}{y \ln^2 y}\) [2]. Lấy tích phân hai vế: \(\int (x+1)^{-1/2}dx = \int -(\ln y)^{-2}d(\ln y)\) [2]. Thu được \(2\sqrt{x+1} + C = \frac{1}{\ln y}\), tức là tích phân tổng quát \(2\sqrt{x+1} - \frac{1}{\ln y} + C = 0\) [2].</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 7: Giải phương trình vi phân tuyến tính cấp 1: \((x y' - 1) \ln x = 2y\)</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q7_de6" value="A"> A. \(y = -\ln x + C \ln^2 x\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de6" value="B"> B. \(y = \ln x + C x^2\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de6" value="C"> C. \(y = -\ln^2 x + C \ln x\)</label>
+                    <label class="option-label"><input type="radio" name="q7_de6" value="D"> D. \(y = -x \ln x + C\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Chia hai vế cho \(x \ln x\), ta đưa về dạng chuẩn: \(y' - \frac{2}{x \ln x}y = \frac{1}{x}\) [3]. Thừa số tích phân là \(p(x) = e^{\int \frac{-2}{x \ln x}dx} = \frac{1}{\ln^2 x}\) [3]. Nhân vào phương trình chuẩn và tích phân 2 vế, ta được \(\frac{1}{\ln^2 x} \cdot y = -\frac{1}{\ln x} + C\), suy ra \(y = -\ln x + C \ln^2 x\) [3].</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="C">
+                <div class="question-text">Câu 8: Phương trình vi phân \((y^3 + x^3(1 + \ln y))dy + 3x^2(1 + y \ln y)dx = 0\) có tích phân tổng quát là:</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q8_de6" value="A"> A. \(x^3(1 + \ln y) + \frac{y^4}{4} = C\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de6" value="B"> B. \(x^3(1 + y \ln y) + \frac{x^4}{4} = C\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de6" value="C"> C. \(x^3(1 + y \ln y) + \frac{y^4}{4} = C\)</label>
+                    <label class="option-label"><input type="radio" name="q8_de6" value="D"> D. \(3x^2(1 + y \ln y) + y^3 = C\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án C. Kiểm tra thấy \(\frac{\partial P}{\partial y} = 3x^2(\ln y + 1) = \frac{\partial Q}{\partial x}\), đây là PT vi phân toàn phần [4]. Hàm \(u(x,y) = \int P dx = x^3(1 + y \ln y) + g(y)\) [4]. Đạo hàm \(u'_y\) và đồng nhất với \(Q\), ta tìm được \(g'(y) = y^3 \Rightarrow g(y) = \frac{y^4}{4}\) [4]. Vậy \(u(x,y) = x^3(1 + y \ln y) + \frac{y^4}{4} = C\) [4].</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="D">
+                <div class="question-text">Câu 9: Cho chuỗi hàm số \(S(x) = \sum_{n=1}^{\infty} \frac{1}{n^{x^2 - 8}}\). Mệnh đề nào sau đây là SAI?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q9_de6" value="A"> A. Tại \(x = 0\), chuỗi số đã cho phân kỳ.</label>
+                    <label class="option-label"><input type="radio" name="q9_de6" value="B"> B. Chuỗi hội tụ khi và chỉ khi \(|x| > 3\).</label>
+                    <label class="option-label"><input type="radio" name="q9_de6" value="C"> C. Tập hợp các giá trị của x để chuỗi số phân kỳ là đoạn \([-3; 3]\).</label>
+                    <label class="option-label"><input type="radio" name="q9_de6" value="D"> D. Tại điểm \(x = 2\sqrt{2}\), chuỗi số đã cho hội tụ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án D. Chuỗi đã cho là chuỗi Riemann với số mũ \(\alpha = x^2 - 8\) [10]. Chuỗi hội tụ khi \(\alpha > 1 \Rightarrow x^2 > 9 \Rightarrow |x| > 3\) [10]. Tại \(x = 2\sqrt{2}\), ta có \(\alpha = (2\sqrt{2})^2 - 8 = 0 < 1\), do đó chuỗi phân kỳ chứ không hội tụ [10]. Vậy D sai.</div>
+            </div>
+
+            <div class="question-block" data-type="single" data-answer="A">
+                <div class="question-text">Câu 10: Cho hàm số \(f(x) = \pi - x\) với \(0 < x < \pi\). Khai triển \(f(x)\) thành chuỗi Fourier theo các hàm sin. Gọi \(S(x)\) là tổng của chuỗi Fourier đó. Mệnh đề nào ĐÚNG?</div>
+                <div class="options">
+                    <label class="option-label"><input type="radio" name="q10_de6" value="A"> A. \(S(x) = \sum_{n=1}^{\infty} \frac{2}{n} \sin(nx)\)</label>
+                    <label class="option-label"><input type="radio" name="q10_de6" value="B"> B. Tại \(x = 0\), tổng chuỗi \(S(0) = \pi\).</label>
+                    <label class="option-label"><input type="radio" name="q10_de6" value="C"> C. Trên \((-\pi, 0)\), chuỗi hội tụ về \(S(x) = \pi + x\).</label>
+                    <label class="option-label"><input type="radio" name="q10_de6" value="D"> D. Chuỗi Fourier hội tụ đều trên đoạn \([-\pi, \pi]\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Đáp án A. Do thác triển lẻ hàm số, chuỗi chỉ chứa \(b_n\). Tích phân từng phần cho \(b_n = \frac{2}{\pi} \int_0^\pi (\pi - x) \sin(nx) dx = \frac{2}{n}\) [11, 12]. Tại \(x=0\) là điểm gián đoạn của thác triển lẻ, tổng chuỗi \(S(0) = 0\) [12]. Trên \((-\pi, 0)\), \(S(x) = -f(-x) = -(\pi - (-x)) = -\pi - x\) [12].</div>
+            </div>
+
+            <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 3rem;">PHẦN II: TRẮC NGHIỆM NHIỀU LỰA CHỌN</h3>
+            <p style="color: #ef4444; font-style: italic;">* Chú ý: Chọn TẤT CẢ các mệnh đề đúng. Sai/Thiếu 1 ý là 0 điểm.</p>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C">
+                <div class="question-text">Câu 11: Trong các chuỗi số sau đây, những chuỗi nào HỘI TỤ TUYỆT ĐỐI? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q11_de6" value="A"> A. \(\sum_{n=1}^{\infty} \frac{\cos n}{n^3}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de6" value="B"> B. \(\sum_{n=1}^{\infty} (-1)^n \frac{n!}{n^n}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de6" value="C"> C. \(\sum_{n=1}^{\infty} (-1)^n \sin\left(\frac{1}{n^2}\right)\)</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de6" value="D"> D. \(\sum_{n=1}^{\infty} \frac{(-1)^n}{\sqrt{n^2+1}}\)</label>
+                    <label class="option-label"><input type="checkbox" name="q11_de6" value="E"> E. \(\sum_{n=2}^{\infty} \frac{(-1)^n \ln n}{n}\)</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C</strong>.<br>
+                - Lấy trị tuyệt đối của (A) ta được \(|\frac{\cos n}{n^3}| \le \frac{1}{n^3}\), HT theo tiêu chuẩn so sánh [13, 14].<br>
+                - Dùng D'Alembert cho trị tuyệt đối của (B): \(\lim \frac{a_{n+1}}{a_n} = \lim \left(\frac{n}{n+1}\right)^n = \frac{1}{e} < 1\), HTTĐ [15].<br>
+                - Trị tuyệt đối của (C) là \(|\sin(1/n^2)| \sim 1/n^2\), chuỗi Riemann với \(\alpha = 2 > 1\) nên HTTĐ [16, 17].<br>
+                - (D) và (E) khi lấy trị tuyệt đối đều phân kỳ, chúng chỉ Bán hội tụ [10, 18].</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,C,E">
+                <div class="question-text">Câu 12: Về tính chất của phương trình vi phân và nghiệm của nó, các mệnh đề nào sau đây là ĐÚNG? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q12_de6" value="A"> A. Phương trình \(y' + p(x)y = q(x)\) là phương trình vi phân tuyến tính cấp 1.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de6" value="B"> B. Nghiệm kỳ dị là nghiệm luôn có thể nhận được từ công thức nghiệm tổng quát bằng cách chọn một hằng số \(C\) thích hợp.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de6" value="C"> C. Phương trình \(P(x,y)dx + Q(x,y)dy = 0\) là phương trình vi phân toàn phần khi và chỉ khi \(\frac{\partial P}{\partial y} = \frac{\partial Q}{\partial x}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de6" value="D"> D. Bài toán tìm quỹ đạo trực giao không thể giải bằng phương trình vi phân cấp 1.</label>
+                    <label class="option-label"><input type="checkbox" name="q12_de6" value="E"> E. Phương trình phân ly biến số có dạng \(y' = f(x)g(y)\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, C, E</strong>.<br>
+                - Ý A đúng theo định nghĩa PTVP tuyến tính cấp 1 [19, 20].<br>
+                - Ý B sai. Nghiệm kỳ dị là nghiệm KHÔNG THỂ nhận được từ họ nghiệm tổng quát (không tương ứng với bất kỳ giá trị \(C\) nào) [21].<br>
+                - Ý C đúng. Đây là điều kiện cần và đủ của PTVP toàn phần [4].<br>
+                - Ý D sai. Các bài toán quỹ đạo hoàn toàn dùng PTVP cấp 1 để giải [22].<br>
+                - Ý E đúng, đây là cấu trúc cơ bản nhất của PT phân ly [23].</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,C">
+                <div class="question-text">Câu 13: Cho hàm \(f(x)\) được biểu diễn bởi chuỗi lũy thừa: \(f(x) = \sum_{n=1}^{\infty} \frac{(-1)^n (x-1)^n}{n^3}\). Chọn các mệnh đề ĐÚNG: <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q13_de6" value="A"> A. Bán kính hội tụ của chuỗi lũy thừa này là \(R = 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de6" value="B"> B. Miền hội tụ của chuỗi là đoạn \([24]\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de6" value="C"> C. Đạo hàm cấp 5 tại điểm \(x=1\) là \(f^{(5)}(1) = -24/25\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de6" value="D"> D. Chuỗi đạo hàm \(f'(x)\) có miền hội tụ là khoảng mở \((0, 2)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q13_de6" value="E"> E. Chuỗi hội tụ đều trên đoạn \([25]\).</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, C</strong>.<br>
+                - Dùng D'Alembert dễ dàng tính được \(R = 1\) (Ý A đúng) [26].<br>
+                - Tại \(x=0\) (chuỗi \(\sum 1/n^3\)) và \(x=2\) (chuỗi \(\sum (-1)^n/n^3\)) đều hội tụ, nên miền HT là \([24]\) (Ý B đúng).<br>
+                - Hệ số Maclaurin là \(a_n = \frac{f^{(n)}(1)}{n!}\). Với \(n=5\), \(a_5 = \frac{-1}{125} \Rightarrow f^{(5)}(1) = 5! \cdot \frac{-1}{125} = -24/25\) (Ý C đúng) [26, 27].<br>
+                - Chuỗi đạo hàm có dạng \(\sum \frac{(-1)^n (x-1)^{n-1}}{n^2}\). Tại mút \(x=0, 2\), mẫu số bậc 2 vẫn hội tụ nên miền hội tụ của chuỗi đạo hàm vẫn là \([24]\) (Ý D sai).<br>
+                - Khoảng \([25]\) nằm ngoài miền hội tụ nên không thể hội tụ đều (Ý E sai).</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="A,B,D">
+                <div class="question-text">Câu 14: Về các định lý và tính chất của chuỗi số, hãy chọn các khẳng định ĐÚNG: <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q14_de6" value="A"> A. Tiêu chuẩn tích phân (Bertrand) khẳng định chuỗi \(\sum \frac{1}{n \ln^p n}\) hội tụ khi và chỉ khi \(p > 1\).</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de6" value="B"> B. Nếu \(\lim a_n \neq 0\) thì chuỗi \(\sum a_n\) chắc chắn phân kỳ.</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de6" value="C"> C. Khi dùng tiêu chuẩn D'Alembert, nếu \(\lim \frac{a_{n+1}}{a_n} = 1\) thì chuỗi chắc chắn hội tụ bán phần.</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de6" value="D"> D. Mọi chuỗi hội tụ tuyệt đối đều có thể đảo thứ tự các số hạng tùy ý mà không làm thay đổi tổng.</label>
+                    <label class="option-label"><input type="checkbox" name="q14_de6" value="E"> E. Tổng của hai chuỗi phân kỳ luôn luôn là một chuỗi phân kỳ.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>A, B, D</strong>.<br>
+                - Ý A đúng theo lý thuyết tích phân suy rộng và chuỗi Bertrand [28].<br>
+                - Ý B đúng (Vi phạm điều kiện cần) [29, 30].<br>
+                - Ý C sai. Khi giới hạn bằng 1, ta không có kết luận gì (có thể phân kỳ hoặc hội tụ), không phải chắc chắn hội tụ bán phần [31, 32].<br>
+                - Ý D đúng theo tính chất giao hoán của chuỗi hội tụ tuyệt đối [33].<br>
+                - Ý E sai. Phản ví dụ: \(\sum 1/n\) phân kỳ, \(\sum -1/n\) phân kỳ, nhưng tổng của chúng là \(\sum 0\) hội tụ.</div>
+            </div>
+
+            <div class="question-block" data-type="multiple" data-answer="B,C,E">
+                <div class="question-text">Câu 15: Xét hàm \(f(x)\) tuần hoàn chu kì \(2\pi\). Mệnh đề nào sau đây ĐÚNG về chuỗi Fourier của nó? <span class="multi-choice-badge">5 lựa chọn</span></div>
+                <div class="options">
+                    <label class="option-label"><input type="checkbox" name="q15_de6" value="A"> A. Nếu \(f(x)\) là hàm lẻ, hệ số \(b_n = 0\) với mọi \(n\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de6" value="B"> B. Nếu \(f(x)\) là hàm chẵn, chuỗi Fourier của nó chỉ bao gồm phần tử \(a_0/2\) và các hàm \(\cos(nx)\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de6" value="C"> C. Tại điểm gián đoạn \(x_0\), chuỗi Fourier hội tụ về giá trị trung bình \(\frac{f(x_0^+) + f(x_0^-)}{2}\).</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de6" value="D"> D. Mọi hàm tuần hoàn chu kỳ \(2\pi\) đều khai triển được thành chuỗi Fourier hội tụ.</label>
+                    <label class="option-label"><input type="checkbox" name="q15_de6" value="E"> E. Theo định lý Dirichlet, nếu \(f(x)\) đơn điệu từng khúc và bị chặn thì chuỗi Fourier hội tụ tại mọi điểm.</label>
+                </div>
+                <div class="explanation"><strong>Giải thích:</strong> Các đáp án đúng: <strong>B, C, E</strong>.<br>
+                - Ý A sai ngược. Hàm lẻ thì \(a_0=0, a_n=0\), còn \(b_n\) khác 0 [34].<br>
+                - Ý B đúng. Khai triển hàm chẵn chỉ chứa các hệ số của hàm cosine [35].<br>
+                - Ý C và E đúng theo nội dung chuẩn của Định lý Dirichlet [36, 37].<br>
+                - Ý D sai. Cần phải thỏa mãn thêm các điều kiện của định lý Dirichlet (như đơn điệu từng khúc, bị chặn) thì chuỗi mới hội tụ [36].</div>
+            </div>
+
+            <button type="button" class="submit-btn" onclick="submitExam('de-6')">NỘP BÀI & XEM ĐIỂM ĐỀ 6</button>
+            <div class="result-box"></div>
+        </div>
+
+<!-- ================= CHỖ ĐỂ BẠN DÁN CÁC ĐỀ TIẾP THEO ================= -->
+    </div>
+
+    <footer>
+        <h2>TuanHungDJ - Math & Code</h2>
+        <p>Hệ thống Đánh giá năng lực Giải tích 3 trực tuyến.</p>
+        <p>Email liên hệ: <a href="mailto:tuanhungsenpai7@gmail.com">tuanhungsenpai7@gmail.com</a></p>
+    </footer>
+
+    <script>
+        let timerInterval = null;
+        let timeRemaining = 0;
+
+        // Hàm mở đề thi từ Dashboard
+        function openExam(examId) {
+            const examDiv = document.getElementById(examId);
+            if (!examDiv) {
+                alert("Đề này đang được TuanHungDJ biên soạn, bạn quay lại sau nhé!");
+                return;
+            }
+
+            // Ẩn Dashboard
+            document.getElementById('dashboard').style.display = 'none';
+            // Hiện đề
+            examDiv.style.display = 'block';
+            // Hiện Timer
+            document.getElementById('timerBar').style.display = 'block';
+
+            // Thiết lập đồng hồ 45 phút
+            timeRemaining = 45 * 60;
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Đã hết thời gian làm bài! Hệ thống tự động thu bài.");
+                    submitExam(examId);
+                }
+            }, 1000);
+        }
+
+        // Cập nhật hiển thị đồng hồ
+        function updateTimerDisplay() {
+            let minutes = Math.floor(timeRemaining / 60);
+            let seconds = timeRemaining % 60;
+            if (minutes < 10) minutes = "0" + minutes;
+            if (seconds < 10) seconds = "0" + seconds;
+            document.getElementById('timeDisplay').innerText = minutes + ":" + seconds;
+            
+            // Đổi màu đỏ khi còn dưới 5 phút
+            if (timeRemaining < 300) {
+                document.getElementById('timerBar').style.backgroundColor = '#dc2626'; // Đỏ
+            }
+        }
+
+        // Hàm Nộp bài và chấm điểm tự động theo Data-Driven
+        function submitExam(examId) {
+            clearInterval(timerInterval); // Dừng đồng hồ
+            let score = 0;
+            const examDiv = document.getElementById(examId);
+            const questions = examDiv.querySelectorAll('.question-block');
+
+            questions.forEach(q => {
+                const type = q.dataset.type; // single hoặc multiple
+                const correctAns = q.dataset.answer.split(','); // Tách chuỗi thành mảng (VD: "A,C,D" -> ["A","C","D"])
+                const explanation = q.querySelector('.explanation');
+                const labels = q.querySelectorAll('.option-label');
+
+                let selected = [];
+                // Thu thập các đáp án user đã chọn
+                q.querySelectorAll('input:checked').forEach(input => {
+                    selected.push(input.value);
+                });
+
+                // Khóa không cho bấm nữa
+                labels.forEach(label => {
+                    label.classList.add('disabled');
+                    label.querySelector('input').disabled = true;
+                });
+
+                // Chấm điểm
+                const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(correctAns.sort());
+                if (isCorrect) {
+                    score += 2;
+                }
+
+                // Bôi màu logic
+                q.querySelectorAll('input').forEach(input => {
+                    const val = input.value;
+                    const label = input.parentElement;
+                    if (correctAns.includes(val)) {
+                        label.classList.add('correct-ans'); // Luôn bôi xanh đáp án đúng
+                    } else if (selected.includes(val)) {
+                        label.classList.add('wrong-ans'); // Nếu chọn sai thì bôi đỏ, gạch ngang
+                    }
+                });
+
+                // Hiện khung giải thích
+                explanation.style.display = 'block';
+            });
+
+            // Hiển thị tổng điểm
+            const submitBtn = examDiv.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "ĐÃ NỘP BÀI";
+            
+            const resultBox = examDiv.querySelector('.result-box');
+            resultBox.innerHTML = `🎉 Điểm của bạn: <span style="font-size: 2.5rem;">${score} / 30</span><br>
+            <span style="font-size: 1rem; color: #475569; font-weight: normal;">(Kéo lên trên để xem các câu sai và đọc giải thích chi tiết)</span>`;
+            resultBox.style.display = 'block';
+            
+            // Trượt êm xuống kết quả
+            resultBox.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+    <nav>
+        <a href="ly_thuyet.html">📚 Lý Thuyết Chương 1</a>
+        <a href="bai_tap.html">✏️ Bài Tập Luyện Tập</a>
+        <a href="luyen_de.html" class="active">📝 Luyện Đề Thi</a>
+        
+        <!-- Nút Đăng xuất được đẩy sang góc phải -->
+        <a href="#" onclick="logout()" style="float: right; background-color: #ef4444; color: white;">🚪 Đăng xuất</a>
+    </nav>
+    <script>
+        // Hàm xử lý đăng xuất
+        function logout() {
+            const confirmLogout = confirm("Bạn có chắc chắn muốn thoát khỏi hệ thống ôn tập Giải tích 3?");
+            if (confirmLogout) {
+                // Xóa toàn bộ vé thông hành trong bộ nhớ tạm
+                sessionStorage.removeItem('isLoggedIn');
+                sessionStorage.removeItem('currentUser');
+                
+                // Đưa về trang đăng nhập
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

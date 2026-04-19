@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <!-- ================= SCRIPT BẢO VỆ TRANG ================= -->
+    <script>
+        // Lính gác: Kiểm tra xem bộ nhớ trình duyệt có vé thông hành (isLoggedIn) hay không
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            alert("⛔ CẢNH BÁO BẢO MẬT: Bạn chưa đăng nhập hoặc tài khoản chưa được duyệt! Hệ thống sẽ chuyển hướng bạn về trang chủ.");
+            // Đá người dùng về lại trang index.html
+            window.location.href = 'index.html'; 
+        }
+    </script>
+    <!-- ======================================================= -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Tập Giải Tích 3 - TuanHungDJ</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --step-color: #0284c7;
+            --casio-color: #334155;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Navigation Bar mô phỏng 3 trang */
+        nav {
+            background-color: #0f172a;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1.5rem;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        nav a.active { background-color: var(--primary-color); }
+        nav a:hover { background-color: #3b82f6; }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Styling cho phần Bài tập */
+        .lesson-title {
+            color: #0f172a;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .exercise-group-title { 
+            background-color: var(--primary-color); 
+            color: white; 
+            padding: 0.8rem 1rem; 
+            border-radius: 6px; 
+            font-size: 1.2rem; 
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        .exercise-box { 
+            border: 1px solid var(--border-color); 
+            border-radius: 6px; 
+            padding: 1.5rem; 
+            margin-bottom: 1.5rem; 
+            background-color: #fff; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .exercise-title { font-weight: bold; color: #0f172a; margin-bottom: 1rem; font-size: 1.1rem; }
+        
+        /* Nút ẩn hiện lời giải */
+        .solution-btn { 
+            background-color: #e2e8f0; 
+            border: 1px solid #cbd5e1; 
+            padding: 0.6rem 1.2rem; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            color: #334155; 
+            font-weight: 600; 
+            margin-top: 1rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .solution-btn:hover { background-color: #cbd5e1; }
+        .solution-content { 
+            display: none; 
+            margin-top: 1rem; 
+            padding: 1.5rem; 
+            background-color: #f8fafc; 
+            border-left: 4px solid var(--step-color); 
+            border-radius: 4px;
+        }
+        .thinking-step { color: #d97706; font-weight: bold; font-style: italic; margin-bottom: 0.5rem;}
+
+        /* Placeholder cho các bài sau */
+        .placeholder-box {
+            border: 2px dashed #cbd5e1;
+            padding: 2rem;
+            text-align: center;
+            color: #64748b;
+            border-radius: 8px;
+            margin-top: 2rem;
+            background-color: #f8fafc;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #0f172a;
+            color: #f1f5f9;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: auto;
+        }
+        footer h2 { margin: 0 0 0.5rem 0; color: #38bdf8; font-size: 1.5rem;}
+        footer p { margin: 0.5rem 0; color: #94a3b8; }
+        footer a { color: #7dd3fc; text-decoration: none; font-weight: bold;}
+        footer a:hover { text-decoration: underline; }
+    </style>
+    <!-- MathJax để hiển thị công thức -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <!-- Menu Điều Hướng -->
+    <nav>
+        <a href="ly_thuyet.html">📚 Lý Thuyết Chương 1</a>
+        <a href="bai_tap.html" class="active">✏️ Bài Tập Luyện Tập</a>
+        <a href="luyen_de.html" onclick="alert('Hãy lưu file Luyện đề vào cùng thư mục để mở nhé!')">📝 Luyện Đề Thi</a>
+    </nav>
+
+    <header>
+        <h1>Giải Tích 3 - Bài Tập Luyện Tập</h1>
+        <p>Rèn luyện tư duy - Chinh phục mọi dạng bài</p>
+    </header>
+
+    <div class="container">
+        <p><i>Hướng dẫn: Hãy tự lấy giấy nháp ra làm trước khi bấm nút "Xem lời giải" để đạt hiệu quả cao nhất nhé!</i></p>
+
+        <!-- ================= KHU VỰC BÀI 1 ================= -->
+        <h2 class="lesson-title">Bài 1: Đại cương về chuỗi số</h2>
+
+        <!-- DẠNG 1: TÍNH TỔNG BẰNG ĐỊNH NGHĨA -->
+        <div class="exercise-group-title">Dạng 1: Xét sự hội tụ và tính tổng bằng định nghĩa (Sai phân, Cấp số nhân, Logarit)</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 1.1: Xét sự hội tụ và tính tổng (nếu có) của chuỗi số: \(\sum_{n=1}^{\infty} \frac{1}{n(n+1)}\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol1_1')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol1_1" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Khi mẫu số là tích của các đa thức bậc nhất, ta cần tách nó thành hiệu của 2 phân số (phương pháp sai phân) để khi cộng lại, các số hạng ở giữa sẽ triệt tiêu nhau.</div>
+                <p><strong>Bước 1: Phân tích số hạng tổng quát</strong><br>
+                Ta có: \(a_n = \frac{1}{n(n+1)} = \frac{1}{n} - \frac{1}{n+1}\).</p>
+                <p><strong>Bước 2: Viết tổng riêng thứ \(n\) (\(S_n\))</strong><br>
+                \(S_n = a_1 + a_2 + ... + a_n\)<br>
+                \(S_n = \left(1 - \frac{1}{2}\right) + \left(\frac{1}{2} - \frac{1}{3}\right) + ... + \left(\frac{1}{n} - \frac{1}{n+1}\right)\)<br>
+                Sau khi rút gọn chéo, ta được: \(S_n = 1 - \frac{1}{n+1}\).</p>
+                <p><strong>Bước 3: Tính giới hạn</strong><br>
+                \(\lim_{n \to +\infty} S_n = \lim_{n \to +\infty} \left(1 - \frac{1}{n+1}\right) = 1\).</p>
+                <p><strong>Kết luận:</strong> Chuỗi hội tụ và có tổng \(S = 1\).</p>
+            </div>
+        </div>
+
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 1.2: Xét sự hội tụ và tính tổng của chuỗi số: \(\frac{9}{10} + \frac{9}{10^2} + ... + \frac{9}{10^n} + ...\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol1_2')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol1_2" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Đây là tổng vô hạn các số hạng có số mũ tăng dần. Hãy nhận diện ngay đây là "Cấp số nhân lùi vô hạn" (hay chuỗi hình học).</div>
+                <p><strong>Bước 1: Nhận dạng các thông số</strong><br>
+                Chuỗi có dạng: \(\sum_{n=1}^{\infty} a_1 \cdot q^{n-1}\).<br>
+                Số hạng đầu tiên \(a_1 = \frac{9}{10}\).<br>
+                Công bội (tỉ số giữa 2 số liên tiếp) \(q = \frac{1}{10}\).</p>
+                <p><strong>Bước 2: Xét điều kiện hội tụ</strong><br>
+                Vì công bội \(|q| = \left|\frac{1}{10}\right| < 1\), nên chuỗi hình học này hội tụ.</p>
+                <p><strong>Bước 3: Tính tổng</strong><br>
+                Áp dụng công thức tổng CSN lùi vô hạn: \(S = \frac{a_1}{1 - q}\)<br>
+                \(S = \frac{9/10}{1 - 1/10} = \frac{9/10}{9/10} = 1\).</p>
+                <p><strong>Kết luận:</strong> Chuỗi hội tụ và có tổng bằng 1.</p>
+            </div>
+        </div>
+
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 1.3: Xét sự hội tụ và tính tổng của chuỗi: \(\sum_{n=1}^{\infty} \ln\left(1 + \frac{1}{n}\right)\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol1_3')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol1_3" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Khi gặp Logarit chứa phép cộng phân số, hãy quy đồng bên trong ngoặc, sau đó dùng tính chất \(\ln(\frac{a}{b}) = \ln a - \ln b\) để tạo ra hiệu sai phân.</div>
+                <p><strong>Bước 1: Biến đổi số hạng tổng quát</strong><br>
+                \(a_n = \ln\left(\frac{n+1}{n}\right) = \ln(n+1) - \ln(n)\).</p>
+                <p><strong>Bước 2: Tìm tổng riêng thứ \(n\) (\(S_n\))</strong><br>
+                \(S_n = (\ln 2 - \ln 1) + (\ln 3 - \ln 2) + ... + (\ln(n+1) - \ln n)\)<br>
+                Rút gọn chéo, chỉ còn lại phần tử đầu và cuối: \(S_n = \ln(n+1) - \ln 1 = \ln(n+1)\).</p>
+                <p><strong>Bước 3: Tính giới hạn</strong><br>
+                \(\lim_{n \to +\infty} S_n = \lim_{n \to +\infty} \ln(n+1) = +\infty\).</p>
+                <p><strong>Kết luận:</strong> Giới hạn không phải số hữu hạn, vậy chuỗi <strong>phân kỳ</strong>.</p>
+            </div>
+        </div>
+
+        <!-- DẠNG 2: ĐIỀU KIỆN CẦN -->
+        <div class="exercise-group-title">Dạng 2: Dùng Điều kiện cần để chứng minh chuỗi phân kỳ</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 1.4: Khảo sát sự hội tụ của chuỗi số: \(\sum_{n=1}^{\infty} \left(\frac{n+2}{n+1}\right)^n\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol1_4')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol1_4" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Hàm số có dạng \((1 + \text{phân số})^n\) khi \(n \to \infty\) chắc chắn liên quan đến giới hạn của số \(e\). Hãy tính \(\lim a_n\) trước.</div>
+                <p><strong>Bước 1: Đưa về giới hạn cơ bản</strong><br>
+                Ta có số hạng tổng quát: \(a_n = \left(\frac{n+2}{n+1}\right)^n = \left(1 + \frac{1}{n+1}\right)^n\).</p>
+                <p><strong>Bước 2: Tính \(\lim_{n \to \infty} a_n\)</strong><br>
+                Thêm bớt số mũ để áp dụng giới hạn \(\lim_{x \to \infty} (1+\frac{1}{x})^x = e\):<br>
+                \(\lim_{n \to \infty} \left[ \left(1 + \frac{1}{n+1}\right)^{n+1} \right]^{\frac{n}{n+1}} = e^1 = e\).</p>
+                <p><strong>Bước 3: Đánh giá bằng Điều kiện cần</strong><br>
+                Vì \(\lim_{n \to \infty} a_n = e \neq 0\), chuỗi đã vi phạm điều kiện cần để hội tụ.</p>
+                <p><strong>Kết luận:</strong> Chuỗi <strong>phân kỳ</strong>.</p>
+            </div>
+        </div>
+
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 1.5: Xét sự hội tụ của chuỗi số: \(\sum_{n=1}^{\infty} n \cdot \tan\left(\frac{1}{n}\right)\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol1_5')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol1_5" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Lượng giác kết hợp đa thức. Hãy dùng Vô cùng bé tương đương khi góc tiến về 0.</div>
+                <p><strong>Bước 1: Dùng vô cùng bé tương đương</strong><br>
+                Khi \(n \to +\infty\), ta có góc \(\frac{1}{n} \to 0\).<br>
+                Suy ra \(\tan\left(\frac{1}{n}\right) \sim \frac{1}{n}\).</p>
+                <p><strong>Bước 2: Tính \(\lim_{n \to \infty} a_n\)</strong><br>
+                \(\lim_{n \to \infty} a_n = \lim_{n \to \infty} n \cdot \frac{1}{n} = 1 \neq 0\).</p>
+                <p><strong>Kết luận:</strong> Vi phạm điều kiện cần, chuỗi <strong>phân kỳ</strong>.</p>
+            </div>
+        </div>
+        <!-- ================= KẾT THÚC BÀI 1 ================= -->
+
+        <!-- ================= KHU VỰC BÀI 2 ================= -->
+        <h2 class="lesson-title">Bài 2: Chuỗi Số Dương (Các Tiêu Chuẩn Hội Tụ)</h2>
+
+        <!-- DẠNG 1: TIÊU CHUẨN SO SÁNH -->
+        <div class="exercise-group-title">Dạng 1: Dùng Tiêu chuẩn So Sánh (Dấu hiệu: Phân thức đa thức, căn thức)</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 2.1: Khảo sát sự hội tụ của chuỗi số: \(\sum_{n=1}^{\infty} \frac{1}{\sqrt{n^2+n}}\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol2_1')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol2_1" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Biểu thức có dạng căn thức, đa thức. Khi n tiến ra vô cùng, bậc thấp sẽ không đáng kể. Ta ngắt bỏ bậc thấp (n) để tìm chuỗi tương đương (chuỗi phụ).</div>
+                <p><strong>Bước 1: Tìm chuỗi tương đương</strong><br>
+                Khi \(n \to +\infty\), ta có: \(a_n = \frac{1}{\sqrt{n^2+n}} \sim \frac{1}{\sqrt{n^2}} = \frac{1}{n}\).</p>
+                <p><strong>Bước 2: Xét chuỗi phụ</strong><br>
+                Chọn chuỗi phụ là \(b_n = \frac{1}{n}\). Dễ thấy \(\lim_{n \to \infty} \frac{a_n}{b_n} = 1 \in (0, +\infty)\).<br>
+                Theo Tiêu chuẩn so sánh 2, hai chuỗi \(\sum a_n\) và \(\sum b_n\) có cùng tính chất hội tụ/phân kỳ.</p>
+                <p><strong>Bước 3: Kết luận</strong><br>
+                Mà chuỗi \(\sum_{n=1}^{\infty} \frac{1}{n}\) là chuỗi Riemann (với \(\alpha = 1\)) nên phân kỳ.<br>
+                Vậy chuỗi đã cho <strong>phân kỳ</strong>.</p>
+                
+                <div style="background-color: #334155; color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin-top: 1rem; font-family: monospace;">
+                    <strong style="color: #38bdf8;">⚡ Mẹo Bấm Casio (Dạng So Sánh):</strong><br>
+                    Để biết chuỗi tương đương đã chọn đúng chưa, nhập vào máy \(\frac{a_X}{b_X}\) rồi bấm <strong>CALC X = 99999</strong>. <br>
+                    Ví dụ: Nhập \(\frac{1}{\sqrt{X^2+X}} : \frac{1}{X}\), máy ra xấp xỉ 1 \(\Rightarrow\) Cách chọn chuỗi phụ chính xác! 
+                </div>
+            </div>
+        </div>
+
+        <!-- DẠNG 2: TIÊU CHUẨN D'ALEMBERT -->
+        <div class="exercise-group-title">Dạng 2: Dùng Tiêu chuẩn D'Alembert (Dấu hiệu: Có chứa Giai thừa '!')</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 2.2: Xét sự hội tụ của chuỗi số: \(\sum_{n=1}^{\infty} \frac{2^n}{(n+1)!}\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol2_2')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol2_2" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Có sự xuất hiện của giai thừa \((n+1)!\) và hàm mũ \(2^n\). Bắt buộc phải dùng Tiêu chuẩn D'Alembert để triệt tiêu giai thừa.</div>
+                <p><strong>Bước 1: Xác định \(a_n\) và \(a_{n+1}\)</strong><br>
+                \(a_n = \frac{2^n}{(n+1)!}\)<br>
+                \(a_{n+1} = \frac{2^{n+1}}{(n+2)!}\)</p>
+                <p><strong>Bước 2: Tính giới hạn \(L = \lim \frac{a_{n+1}}{a_n}\)</strong><br>
+                \(L = \lim_{n \to \infty} \left( \frac{2^{n+1}}{(n+2)!} \cdot \frac{(n+1)!}{2^n} \right)\)<br>
+                \(L = \lim_{n \to \infty} \frac{2}{n+2} = 0\).</p>
+                <p><strong>Bước 3: Kết luận</strong><br>
+                Vì \(L = 0 < 1\), theo Tiêu chuẩn D'Alembert, chuỗi đã cho <strong>hội tụ</strong>.</p>
+                
+                <div style="background-color: #334155; color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin-top: 1rem; font-family: monospace;">
+                    <strong style="color: #38bdf8;">⚡ Mẹo Bấm Casio (Dạng D'Alembert):</strong><br>
+                    Nhập trực tiếp tỉ số \(\frac{a_{X+1}}{a_X}\) vào máy. Bấm <strong>CALC X = 50</strong> <i>(Lưu ý: Không nhập X quá to vì Giai thừa sẽ làm máy tràn bộ nhớ - Math Error)</i>.<br>
+                    Máy tính ra kết quả \(\approx 0.038 < 1\) \(\Rightarrow\) Chọn ngay đáp án Hội tụ!
+                </div>
+            </div>
+        </div>
+
+        <!-- DẠNG 3: TIÊU CHUẨN CAUCHY -->
+        <div class="exercise-group-title">Dạng 3: Dùng Tiêu chuẩn Cauchy (Dấu hiệu: Biểu thức bị mũ n bao trùm)</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 2.3: Xét sự hội tụ của chuỗi số: \(\sum_{n=1}^{\infty} \left( \frac{n+1}{n+2} \right)^{n^2}\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol2_3')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol2_3" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Toàn bộ biểu thức bị nâng lên lũy thừa \(n^2\). Việc lấy căn bậc n (Tiêu chuẩn Cauchy) sẽ làm mất một bậc n ở số mũ, đưa bài toán về dạng giới hạn hàm mũ cơ bản (liên quan đến e).</div>
+                <p><strong>Bước 1: Tính giới hạn \(L = \lim \sqrt[n]{a_n}\)</strong><br>
+                \(L = \lim_{n \to \infty} \sqrt[n]{\left(\frac{n+1}{n+2}\right)^{n^2}} = \lim_{n \to \infty} \left(\frac{n+1}{n+2}\right)^n\)</p>
+                <p><strong>Bước 2: Tính giới hạn của hàm mũ</strong><br>
+                Ta biến đổi: \(\left(\frac{n+1}{n+2}\right)^n = \left(1 - \frac{1}{n+2}\right)^n\)<br>
+                Dùng giới hạn cơ bản \(\lim_{x \to \infty} (1 + \frac{1}{x})^x = e\), ta có:<br>
+                \(L = \lim_{n \to \infty} \left[ \left(1 - \frac{1}{n+2}\right)^{-(n+2)} \right]^{\frac{-n}{n+2}} = e^{-1} = \frac{1}{e}\).</p>
+                <p><strong>Bước 3: Kết luận</strong><br>
+                Vì \(e \approx 2.718\) nên \(L = \frac{1}{e} < 1\). Theo Tiêu chuẩn Cauchy, chuỗi <strong>hội tụ</strong>.</p>
+                
+                <div style="background-color: #334155; color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin-top: 1rem; font-family: monospace;">
+                    <strong style="color: #38bdf8;">⚡ Mẹo Bấm Casio (Dạng Cauchy):</strong><br>
+                    Muốn tìm nhanh L, hãy lấy biểu thức bỏ đi một bậc \(n\) ở mũ. Nghĩa là nhập \(\left(\frac{X+1}{X+2}\right)^X\).<br>
+                    Bấm <strong>CALC X = 99999</strong>. Máy trả về xấp xỉ \(0.3678\).<br>
+                    So sánh thấy \(0.3678 < 1\) \(\Rightarrow\) Chọn ngay Hội tụ!
+                </div>
+            </div>
+        </div>
+
+        <!-- DẠNG 4: TIÊU CHUẨN TÍCH PHÂN -->
+        <div class="exercise-group-title">Dạng 4: Dùng Tiêu chuẩn Tích phân (Dấu hiệu: Chứa \(1/n\) và \(\ln n\))</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 2.4: Khảo sát sự hội tụ của chuỗi số: \(\sum_{n=2}^{\infty} \frac{1}{n \ln^2 n}\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol2_4')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol2_4" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Khi thấy \(1/n\) đi kèm với hàm \(\ln n\), hãy nghĩ ngay đến Tích phân suy rộng, vì đạo hàm của \(\ln x\) chính là \(1/x\).</div>
+                <p><strong>Bước 1: Chọn hàm số tương ứng</strong><br>
+                Xét hàm số \(f(x) = \frac{1}{x \ln^2 x}\). Dễ thấy \(f(x)\) dương, liên tục và giảm trên \([2, +\infty)\).</p>
+                <p><strong>Bước 2: Tính tích phân suy rộng</strong><br>
+                Xét sự hội tụ của \(I = \int_{2}^{+\infty} \frac{1}{x \ln^2 x} dx\).<br>
+                Ta có: \(I = \lim_{b \to +\infty} \int_{2}^{b} \frac{d(\ln x)}{\ln^2 x} = \lim_{b \to +\infty} \left( -\frac{1}{\ln x} \Big|_2^b \right)\)<br>
+                \(I = \lim_{b \to +\infty} \left( -\frac{1}{\ln b} + \frac{1}{\ln 2} \right) = 0 + \frac{1}{\ln 2} = \frac{1}{\ln 2}\).</p>
+                <p><strong>Bước 3: Kết luận</strong><br>
+                Vì tích phân suy rộng hội tụ (ra kết quả hữu hạn), nên theo Tiêu chuẩn Tích phân, chuỗi \(\sum_{n=2}^{\infty} \frac{1}{n \ln^2 n}\) cũng <strong>hội tụ</strong>.</p>
+                
+                <div style="background-color: #334155; color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin-top: 1rem; font-family: monospace;">
+                    <strong style="color: #38bdf8;">⚡ Mẹo Bấm Casio (Dạng Tích Phân):</strong><br>
+                    Gặp bài này trắc nghiệm, chỉ cần dùng máy tính bấm thẳng biểu tượng \(\int\) tích phân!<br>
+                    Nhập: \(\int_{2}^{100} \frac{1}{x \ln^2 x} dx\). (Thay vô cùng bằng 100 hoặc 200).<br>
+                    Máy hiện ra \(\approx 1.22\) (một số hữu hạn không quá lớn) \(\Rightarrow\) Hội tụ. Nếu máy tính rất lâu và ra số lớn liên tục tăng \(\Rightarrow\) Phân kỳ.
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= KẾT THÚC BÀI 2 ================= -->
+        
+        <!-- ================= KHU VỰC BÀI 3 ================= -->
+        <h2 class="lesson-title" style="margin-top: 3rem;">Bài 3: Chuỗi Đan Dấu & Chuỗi Có Dấu Bất Kỳ</h2>
+
+        <!-- DẠNG 1: DÙNG TIÊU CHUẨN LEIBNIZ -->
+        <div class="exercise-group-title">Dạng 1: Xét sự hội tụ của chuỗi đan dấu bằng Tiêu chuẩn Leibniz</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 3.1: Xét sự hội tụ của chuỗi số đan dấu: \(\sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n}\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol3_1')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol3_1" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Chuỗi có chứa \((-1)^n\) hoặc \((-1)^{n-1}\) là chuỗi đan dấu. Bỏ dấu âm đi để lấy dãy số dương \(a_n\). Dùng tiêu chuẩn Leibniz: Cần chứng minh dãy \(a_n\) giảm và tiến về 0.</div>
+                <p><strong>Bước 1: Xác định dãy số dương \(a_n\)</strong><br>
+                Ta có số hạng tổng quát của phần dương là \(a_n = \frac{1}{n}\) với \(n \ge 1\).</p>
+                <p><strong>Bước 2: Kiểm tra 2 điều kiện của Tiêu chuẩn Leibniz</strong><br>
+                1. Tính giới hạn: \(\lim_{n \to \infty} a_n = \lim_{n \to \infty} \frac{1}{n} = 0\). Điều kiện 1 thỏa mãn.<br>
+                2. Xét tính đơn điệu: Rõ ràng \(\frac{1}{n+1} < \frac{1}{n}\) với mọi \(n \ge 1\). Hoặc xét đạo hàm hàm số tương ứng \(f(x) = \frac{1}{x} \Rightarrow f'(x) = -\frac{1}{x^2} < 0\). Vậy dãy \(a_n\) là dãy giảm. Điều kiện 2 thỏa mãn [4].</p>
+                <p><strong>Bước 3: Kết luận</strong><br>
+                Theo tiêu chuẩn Leibniz, chuỗi đan dấu đã cho <strong>hội tụ</strong> [4].</p>
+                
+                <div style="background-color: #334155; color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin-top: 1rem; font-family: monospace;">
+                    <strong style="color: #38bdf8;">⚡ Mẹo Bấm Casio (Kiểm tra dãy giảm cực nhanh):</strong><br>
+                    Đề phòng các hàm phức tạp (như có chứa logarit hay lượng giác), dùng chức năng <strong>TABLE (Mode 8 hoặc Menu 8)</strong>.<br>
+                    - Nhập hàm \(f(x) = \frac{1}{x}\) (chỉ nhập phần dương bỏ \((-1)^n\)).<br>
+                    - Chọn Start = 1, End = 20, Step = 1.<br>
+                    - Nhìn cột \(f(x)\), thấy các số nhỏ dần \((1 \to 0.5 \to 0.33 \dots)\) và tiến sát về 0 \(\Rightarrow\) Thỏa mãn Leibniz \(\Rightarrow\) Hội tụ!
+                </div>
+            </div>
+        </div>
+
+        <!-- DẠNG 2: HỘI TỤ TUYỆT ĐỐI -->
+        <div class="exercise-group-title">Dạng 2: Chứng minh chuỗi Hội tụ tuyệt đối</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 3.2: Xét sự hội tụ của chuỗi số: \(\sum_{n=1}^{\infty} (-1)^n \tan\left(\frac{1}{n\sqrt{n}}\right)\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol3_2')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol3_2" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Khi bài toán yêu cầu xét tính "Hội tụ tuyệt đối" hay "Bán hội tụ", LUÔN LUÔN phải lấy trị tuyệt đối trước. Nếu chuỗi trị tuyệt đối hội tụ, bài toán kết thúc ngay.</div>
+                <p><strong>Bước 1: Xét chuỗi trị tuyệt đối</strong><br>
+                Lấy trị tuyệt đối số hạng tổng quát: \(|a_n| = \left|(-1)^n \tan\left(\frac{1}{n\sqrt{n}}\right)\right| = \tan\left(\frac{1}{n^{3/2}}\right)\) [5].<br>
+                Ta thu được chuỗi dương: \(\sum_{n=1}^{\infty} \tan\left(\frac{1}{n^{3/2}}\right)\).</p>
+                <p><strong>Bước 2: Dùng tiêu chuẩn so sánh cho chuỗi trị tuyệt đối</strong><br>
+                Khi \(n \to +\infty\), góc \(\frac{1}{n^{3/2}} \to 0\). Áp dụng vô cùng bé tương đương: \(\tan\left(\frac{1}{n^{3/2}}\right) \sim \frac{1}{n^{3/2}}\) [5].<br>
+                Chuỗi \(\sum_{n=1}^{\infty} \frac{1}{n^{3/2}}\) là chuỗi Riemann với số mũ \(\alpha = \frac{3}{2} > 1\) nên nó hội tụ [3].<br>
+                Do đó, chuỗi trị tuyệt đối \(\sum_{n=1}^{\infty} |a_n|\) hội tụ (theo Tiêu chuẩn so sánh 2) [3].</p>
+                <p><strong>Bước 3: Kết luận</strong><br>
+                Vì chuỗi trị tuyệt đối hội tụ, nên chuỗi gốc ban đầu <strong>hội tụ tuyệt đối</strong> [2, 5].</p>
+            </div>
+        </div>
+
+        <!-- DẠNG 3: BÁN HỘI TỤ -->
+        <div class="exercise-group-title">Dạng 3: Chứng minh chuỗi Bán hội tụ</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 3.3: Xét sự hội tụ của chuỗi số: \(\sum_{n=2}^{\infty} \frac{(-1)^n}{\ln n}\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol3_3')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol3_3" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Khi chuỗi trị tuyệt đối phân kỳ (thường là bậc mẫu số \(\le 1\)), ta bắt buộc phải quay lại xét chuỗi đan dấu gốc bằng Leibniz. Nếu Leibniz hội tụ, ta gọi đó là "Bán hội tụ".</div>
+                <p><strong>Bước 1: Xét chuỗi trị tuyệt đối</strong><br>
+                Lấy trị tuyệt đối, ta có chuỗi dương: \(\sum_{n=2}^{\infty} \frac{1}{\ln n}\).<br>
+                Vì \(\ln n < n\) với mọi \(n \ge 2\), nghịch đảo lại ta có \(\frac{1}{\ln n} > \frac{1}{n}\) [6].<br>
+                Mà chuỗi \(\sum \frac{1}{n}\) (chuỗi điều hòa) phân kỳ, nên theo tiêu chuẩn so sánh 1, chuỗi trị tuyệt đối \(\sum \frac{1}{\ln n}\) <strong>phân kỳ</strong> [6, 7]. Chuỗi này không hội tụ tuyệt đối.</p>
+                <p><strong>Bước 2: Xét chuỗi gốc bằng Tiêu chuẩn Leibniz</strong><br>
+                Quay lại chuỗi gốc ban đầu là một chuỗi đan dấu với \(a_n = \frac{1}{\ln n}\).<br>
+                1. \(\lim_{n \to \infty} \frac{1}{\ln n} = 0\) [7].<br>
+                2. Do \(\ln(n+1) > \ln(n)\) nên \(\frac{1}{\ln(n+1)} < \frac{1}{\ln n}\), tức là dãy \(a_n\) giảm [7].<br>
+                Thỏa mãn tiêu chuẩn Leibniz, vậy chuỗi gốc ban đầu hội tụ [7].</p>
+                <p><strong>Bước 3: Kết luận</strong><br>
+                Chuỗi gốc hội tụ nhưng chuỗi trị tuyệt đối phân kỳ, ta kết luận chuỗi đã cho <strong>Bán hội tụ</strong> [1, 7].</p>
+                
+                <div style="background-color: #334155; color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin-top: 1rem; font-family: monospace;">
+                    <strong style="color: #38bdf8;">⚡ Mẹo Bấm Casio (Nhận diện nhanh Bán HT hay HTTĐ):</strong><br>
+                    Nhìn vào bậc của mẫu số khi bỏ dấu \((-1)^n\):<br>
+                    - Nếu bậc của tử và mẫu triệt tiêu cho nhau ra kết quả có dạng \(\frac{1}{n^\alpha}\) mà <strong>\(\alpha > 1\)</strong> \(\Rightarrow\) Khoanh ngay <strong>Hội tụ tuyệt đối</strong>.<br>
+                    - Nếu <strong>\(0 < \alpha \le 1\)</strong> (ví dụ: \(1/n, 1/\sqrt{n}, 1/\ln n\)) \(\Rightarrow\) Khoanh ngay <strong>Bán hội tụ</strong>.
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= KẾT THÚC BÀI 3 ================= -->
+        
+        <!-- ================= KHU VỰC BÀI 4 ================= -->
+        <h2 class="lesson-title" style="margin-top: 3rem;">Bài 4: Chuỗi Lũy Thừa & Khai Triển Maclaurin</h2>
+
+        <!-- DẠNG 1: TÌM MIỀN HỘI TỤ -->
+        <div class="exercise-group-title">Dạng 1: Tìm Bán kính và Miền hội tụ của chuỗi lũy thừa</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 4.1: Tìm bán kính hội tụ, khoảng hội tụ và miền hội tụ của chuỗi: \(\sum_{n=1}^{\infty} \frac{x^n}{(n+2)3^n}\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol4_1')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol4_1" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Có 3 bước cố định: (1) Tìm bán kính R bằng công thức giới hạn. (2) Suy ra khoảng hội tụ (-R, R). (3) BẮT BUỘC xét riêng 2 đầu mút x = R và x = -R xem dùng ngoặc tròn hay vuông.</div>
+                <p><strong>Bước 1: Tìm bán kính hội tụ \(R\)</strong><br>
+                Hệ số \(a_n = \frac{1}{(n+2)3^n}\) và \(a_{n+1} = \frac{1}{(n+3)3^{n+1}}\) [1].<br>
+                Tính \(R = \lim_{n \to +\infty} \left| \frac{a_n}{a_{n+1}} \right| = \lim_{n \to +\infty} \frac{(n+3)3^{n+1}}{(n+2)3^n} = \lim_{n \to +\infty} \frac{3(n+3)}{n+2} = 3\) [1].<br>
+                Vậy bán kính hội tụ là \(R = 3\), khoảng hội tụ tạm thời là \((-3, 3)\) [1].</p>
+                <p><strong>Bước 2: Xét tại các đầu mút</strong><br>
+                - Tại \(x = 3\): Chuỗi trở thành \(\sum_{n=1}^{\infty} \frac{3^n}{(n+2)3^n} = \sum_{n=1}^{\infty} \frac{1}{n+2}\) [1]. Đây là chuỗi điều hòa phân kỳ \(\Rightarrow\) Dùng ngoặc tròn tại 3 [4].<br>
+                - Tại \(x = -3\): Chuỗi trở thành \(\sum_{n=1}^{\infty} \frac{(-3)^n}{(n+2)3^n} = \sum_{n=1}^{\infty} \frac{(-1)^n}{n+2}\) [1]. Đây là chuỗi đan dấu, dãy \(1/(n+2)\) giảm về 0 nên hội tụ theo Tiêu chuẩn Leibniz \(\Rightarrow\) Dùng ngoặc vuông tại -3 [4].</p>
+                <p><strong>Bước 3: Kết luận</strong><br>
+                Miền hội tụ của chuỗi là: \([-3, 3)\) [4].</p>
+                
+                <div style="background-color: #334155; color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin-top: 1rem; font-family: monospace;">
+                    <strong style="color: #38bdf8;">⚡ Mẹo Bấm Casio (Kiểm tra mút):</strong><br>
+                    Để biết tại mút là ngoặc tròn hay vuông, nhập tổng \(\sum_{x=1}^{50}\) với giá trị \(x\) tương ứng.<br>
+                    Ví dụ thử \(x = 3\): Bấm \(\sum_{X=1}^{50} \frac{3^X}{(X+2)3^X}\), máy ra số lớn và liên tục tăng nếu đổi 50 thành 100 \(\rightarrow\) Phân kỳ (Ngoặc tròn).<br>
+                    Thử \(x = -3\): Bấm \(\sum_{X=1}^{50} \frac{(-3)^X}{(X+2)3^X}\), máy ra \(\approx -0.28\) (số hội tụ ổn định) \(\rightarrow\) Hội tụ (Ngoặc vuông).
+                </div>
+            </div>
+        </div>
+
+        <!-- DẠNG 2: KHAI TRIỂN MACLAURIN -->
+        <div class="exercise-group-title">Dạng 2: Khai triển hàm số thành chuỗi Maclaurin</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 4.2: Khai triển hàm số \(f(x) = \ln(3+x)\) thành chuỗi Maclaurin và tìm miền hội tụ.</div>
+            <button class="solution-btn" onclick="toggleSolution('sol4_2')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol4_2" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Đưa hàm số về dạng có sẵn trong bảng công thức. Bảng có \(\ln(1+u)\), vậy ta cần nhóm số 3 ra ngoài để tạo số 1 bên trong logarit.</div>
+                <p><strong>Bước 1: Biến đổi hàm số</strong><br>
+                Ta có: \(f(x) = \ln\left[3\left(1 + \frac{x}{3}\right)\right] = \ln 3 + \ln\left(1 + \frac{x}{3}\right)\) [2].</p>
+                <p><strong>Bước 2: Áp dụng công thức cơ bản</strong><br>
+                Sử dụng công thức: \(\ln(1+u) = \sum_{n=1}^{\infty} (-1)^{n-1} \frac{u^n}{n}\) (với \(-1 < u \le 1\)) [5].<br>
+                Thay \(u = \frac{x}{3}\), ta được:<br>
+                \(\ln\left(1 + \frac{x}{3}\right) = \sum_{n=1}^{\infty} (-1)^{n-1} \frac{\left(\frac{x}{3}\right)^n}{n} = \sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n 3^n} x^n\) [6].</p>
+                <p><strong>Bước 3: Kết luận và tìm miền hội tụ</strong><br>
+                Khai triển Maclaurin của hàm số là: \(f(x) = \ln 3 + \sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n 3^n} x^n\) [6].<br>
+                Điều kiện hội tụ: \(-1 < \frac{x}{3} \le 1 \Rightarrow -3 < x \le 3\). Miền hội tụ là \((-3, 3]\) [6].</p>
+            </div>
+        </div>
+
+        <!-- DẠNG 3: TÍNH TỔNG CHUỖI BẰNG ĐẠO HÀM/TÍCH PHÂN -->
+        <div class="exercise-group-title">Dạng 3: Tính tổng chuỗi bằng phương pháp Đạo hàm / Tích phân</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 4.3: Tính tổng của chuỗi số sau: \(S = \sum_{n=1}^{\infty} \frac{n}{5^n}\)</div>
+            <button class="solution-btn" onclick="toggleSolution('sol4_3')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol4_3" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Chuỗi có dạng \(n \cdot x^n\). Nhớ rằng \(n x^{n-1}\) chính là đạo hàm của \(x^n\). Do đó, ta sẽ xét chuỗi hàm lũy thừa \(\sum x^n\), lấy đạo hàm để xuất hiện \(n\), sau đó thay \(x = 1/5\) vào.</div>
+                <p><strong>Bước 1: Thiết lập chuỗi hàm phụ</strong><br>
+                Ta viết lại tổng cần tính: \(S = \frac{1}{5} \sum_{n=1}^{\infty} n \left(\frac{1}{5}\right)^{n-1}\) [3].<br>
+                Xét hàm số: \(S(x) = \sum_{n=1}^{\infty} n x^{n-1}\) với \(|x| < 1\) [7]. Tổng cần tính chính là \(\frac{1}{5} S\left(\frac{1}{5}\right)\) [3].</p>
+                <p><strong>Bước 2: Dùng tính chất tích phân chuỗi lũy thừa</strong><br>
+                Lấy tích phân hai vế của \(S(x)\) trên \([0, x]\):<br>
+                \(\int_0^x S(t)dt = \int_0^x \left(\sum_{n=1}^{\infty} n t^{n-1}\right) dt = \sum_{n=1}^{\infty} \left( \int_0^x n t^{n-1} dt \right) = \sum_{n=1}^{\infty} x^n\) [7].<br>
+                Đây là chuỗi hình học có tổng bằng \(\frac{x}{1-x}\) [7].</p>
+                <p><strong>Bước 3: Đạo hàm ngược lại để tìm S(x)</strong><br>
+                Vì \(\int_0^x S(t)dt = \frac{x}{1-x}\), đạo hàm hai vế theo \(x\):<br>
+                \(S(x) = \left( \frac{x}{1-x} \right)' = \frac{1}{(1-x)^2}\) [3].</p>
+                <p><strong>Bước 4: Thay giá trị để tính S</strong><br>
+                Thay \(x = \frac{1}{5}\) vào ta được: \(S\left(\frac{1}{5}\right) = \frac{1}{(1 - 1/5)^2} = \frac{25}{16}\) [3].<br>
+                Vậy tổng của chuỗi ban đầu là: \(\frac{1}{5} \cdot \frac{25}{16} = \frac{5}{16}\) [3].</p>
+                
+                <div style="background-color: #334155; color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin-top: 1rem; font-family: monospace;">
+                    <strong style="color: #38bdf8;">⚡ Mẹo Bấm Casio (Hack đáp án câu Tính Tổng):</strong><br>
+                    Các câu tính tổng chuỗi vô hạn thi trắc nghiệm (như Câu 8, Câu 10 trong đề thi thử), bạn chỉ cần nhập vào Casio tính tổng hữu hạn từ 1 đến 100.<br>
+                    Thực hành: Bấm \(\sum_{X=1}^{100} \frac{X}{5^X}\) = \(0.3125\).<br>
+                    Đổi ra phân số: \(0.3125 = \frac{5}{16}\). Khoanh ngay đáp án mà không cần nháp một dòng nào!
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= KẾT THÚC BÀI 4 ================= -->
+        
+        <!-- ================= KHU VỰC BÀI 5 ================= -->
+        <h2 class="lesson-title" style="margin-top: 3rem;">Bài 5: Chuỗi Fourier</h2>
+
+        <!-- DẠNG 1: KHAI TRIỂN HÀM CHẴN -->
+        <div class="exercise-group-title">Dạng 1: Khai triển Fourier của hàm số Chẵn</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 5.1: Khai triển hàm số \(f(x) = x^2\) với \(-\pi < x < \pi\), tuần hoàn chu kỳ \(2\pi\) thành chuỗi Fourier.</div>
+            <button class="solution-btn" onclick="toggleSolution('sol5_1')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol5_1" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Khi đề bài cho hàm đa thức chẵn (như \(x^2, |x|, x^4...\)), ta nhận xét ngay hàm số là hàm chẵn trên \((-\pi, \pi)\). Hệ quả là \(b_n = 0\), chuỗi sẽ chỉ chứa các hàm cosin. Ta chỉ cần đi tìm \(a_0\) và \(a_n\).</div>
+                <p><strong>Bước 1: Nhận xét tính chẵn lẻ</strong><br>
+                Vì \(f(-x) = (-x)^2 = x^2 = f(x)\) nên \(f(x)\) là hàm chẵn. Suy ra \(b_n = 0, \forall n \ge 1\) [1].</p>
+                <p><strong>Bước 2: Tính hệ số \(a_0\) và \(a_n\)</strong><br>
+                - Tính \(a_0\):<br>
+                \(a_0 = \frac{1}{\pi} \int_{-\pi}^{\pi} x^2 dx = \frac{1}{\pi} \left( \frac{x^3}{3} \right) \Bigg|_{-\pi}^{\pi} = \frac{2\pi^2}{3}\) [1].<br><br>
+                - Tính \(a_n\) (dùng tích phân từng phần 2 lần):<br>
+                \(a_n = \frac{1}{\pi} \int_{-\pi}^{\pi} x^2 \cos(nx) dx = \frac{4(-1)^n}{n^2}\) [1].</p>
+                <p><strong>Bước 3: Viết chuỗi Fourier</strong><br>
+                Công thức tổng quát: \(f(x) = \frac{a_0}{2} + \sum_{n=1}^\infty [a_n \cos(nx) + b_n \sin(nx)]\).<br>
+                Thế số vào ta được:<br>
+                \(f(x) = \frac{\pi^2}{3} + \sum_{n=1}^\infty \frac{4(-1)^n}{n^2} \cos(nx)\) [1, 4].</p>
+            </div>
+        </div>
+
+        <!-- DẠNG 2: KHAI TRIỂN HÀM LẺ -->
+        <div class="exercise-group-title">Dạng 2: Khai triển Fourier của hàm số Lẻ</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 5.2: Khai triển hàm số \(f(x) = x\) trên đoạn \([-\pi, \pi)\), tuần hoàn chu kỳ \(2\pi\) thành chuỗi Fourier.</div>
+            <button class="solution-btn" onclick="toggleSolution('sol5_2')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol5_2" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Ngược lại với Dạng 1, hàm \(f(x) = x\) là hàm lẻ. Do đó \(a_0 = 0\) và \(a_n = 0\), chuỗi sẽ chỉ toàn các hàm sin. Bài toán được rút gọn chỉ còn việc tính \(b_n\).</div>
+                <p><strong>Bước 1: Nhận xét tính chẵn lẻ</strong><br>
+                Vì \(f(-x) = -x = -f(x)\) nên \(f(x)\) là hàm lẻ. Suy ra \(a_0 = 0\) và \(a_n = 0, \forall n \ge 1\) [2].</p>
+                <p><strong>Bước 2: Tính hệ số \(b_n\)</strong><br>
+                Ta có: \(b_n = \frac{2}{\pi} \int_0^\pi f(x) \sin(nx) dx = \frac{2}{\pi} \int_0^\pi x \sin(nx) dx\) [2].<br>
+                Dùng phương pháp tích phân từng phần: Đặt \(u = x \Rightarrow du = dx\); \(dv = \sin(nx)dx \Rightarrow v = -\frac{1}{n} \cos(nx)\).<br>
+                \(b_n = \frac{2}{\pi} \left[ \left. -\frac{x}{n} \cos(nx) \right|_0^\pi + \frac{1}{n} \int_0^\pi \cos(nx) dx \right]\)<br>
+                \(= \frac{2}{\pi} \left[ -\frac{\pi}{n} \cos(n\pi) - 0 + 0 \right] = -\frac{2}{n} (-1)^n = \frac{2(-1)^{n+1}}{n}\) [2].</p>
+                <p><strong>Bước 3: Viết chuỗi Fourier</strong><br>
+                Vậy khai triển chuỗi Fourier của hàm số là:<br>
+                \(f(x) = \sum_{n=1}^\infty \frac{2(-1)^{n+1}}{n} \sin(nx)\) [2].</p>
+            </div>
+        </div>
+
+        <!-- DẠNG 3: ÁP DỤNG ĐỊNH LÝ DIRICHLET -->
+        <div class="exercise-group-title">Dạng 3: Áp dụng Định lý Dirichlet tính tổng chuỗi số</div>
+        
+        <div class="exercise-box">
+            <div class="exercise-title">Bài 5.3: Cho biết khai triển Fourier của hàm \(f(x) = x^2\) là \(f(x) = \frac{\pi^2}{3} + \sum_{n=1}^\infty \frac{4(-1)^n}{n^2} \cos(nx)\). Áp dụng định lý Dirichlet để tính tổng của chuỗi số \(\sum_{n=1}^\infty \frac{1}{n^2}\).</div>
+            <button class="solution-btn" onclick="toggleSolution('sol5_3')">👁️ Xem lời giải chi tiết</button>
+            <div id="sol5_3" class="solution-content">
+                <div class="thinking-step">💡 Tư duy giải toán: Định lý Dirichlet cho biết tại các điểm liên tục, tổng của chuỗi Fourier bằng chính giá trị của hàm số. Để triệt tiêu \(\cos(nx)\) và \((-1)^n\), ta thường chọn thế \(x = \pi\), vì \(\cos(n\pi) = (-1)^n\), và \((-1)^n \cdot (-1)^n = 1\).</div>
+                <p><strong>Bước 1: Áp dụng Định lý Dirichlet tại \(x = \pi\)</strong><br>
+                Tại \(x = \pi\), hàm số được mở rộng tuần hoàn liên tục (vì \((-\pi)^2 = \pi^2\)), do đó tổng của chuỗi Fourier bằng \(f(\pi) = \pi^2\) [5].</p>
+                <p><strong>Bước 2: Thay giá trị vào chuỗi</strong><br>
+                Ta thế \(x = \pi\) vào khai triển Fourier đã cho:<br>
+                \(\pi^2 = \frac{\pi^2}{3} + \sum_{n=1}^\infty \frac{4(-1)^n}{n^2} \cos(n\pi)\)<br>
+                Biết rằng \(\cos(n\pi) = (-1)^n\), nên biểu thức bên trong tổng trở thành:<br>
+                \(\frac{4(-1)^n}{n^2} \cdot (-1)^n = \frac{4 \cdot (-1)^{2n}}{n^2} = \frac{4}{n^2}\).<br>
+                Phương trình trở thành: \(\pi^2 = \frac{\pi^2}{3} + \sum_{n=1}^\infty \frac{4}{n^2} = \frac{\pi^2}{3} + 4 \sum_{n=1}^\infty \frac{1}{n^2}\).</p>
+                <p><strong>Bước 3: Tính tổng chuỗi số</strong><br>
+                Chuyển vế để tìm giá trị của tổng chuỗi:<br>
+                \(4 \sum_{n=1}^\infty \frac{1}{n^2} = \pi^2 - \frac{\pi^2}{3} = \frac{2\pi^2}{3}\)<br>
+                \(\Rightarrow \sum_{n=1}^\infty \frac{1}{n^2} = \frac{2\pi^2}{3 \cdot 4} = \frac{\pi^2}{6}\) [3].</p>
+                
+                <div style="background-color: #334155; color: #f8fafc; padding: 1rem; border-radius: 6px; border-left: 4px solid #94a3b8; margin-top: 1rem; font-family: monospace;">
+                    <strong style="color: #38bdf8;">⚡ Mẹo Bấm Casio (Phần Fourier):</strong><br>
+                    Nếu đề thi trắc nghiệm yêu cầu tìm hệ số \(a_n\), \(b_n\) của một hàm số phức tạp:<br>
+                    1. <strong>Bắt buộc</strong> chuyển máy tính sang chế độ Radian (Shift Menu -> Angle Unit -> Radian).<br>
+                    2. Bấm thẳng tích phân định nghĩa với \(n = 1\). Ví dụ: \(\frac{1}{\pi} \int_{-\pi}^{\pi} x^2 \cos(1 \cdot x) dx\).<br>
+                    3. Máy ra kết quả \(-4\). Bạn mang \(n=1\) thế vào 4 đáp án (A,B,C,D). Đáp án nào ra \(-4\) thì khoanh ngay lập tức!
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= KẾT THÚC BÀI 5 ================= -->
+        <div id="placeholder-bai5" class="placeholder-box" style="border: 2px dashed #cbd5e1; padding: 2rem; text-align: center; color: #64748b; border-radius: 8px; margin-top: 2rem; background-color: #f8fafc;">
+            <h3>⏳ Không gian dành cho Bài 5: Chuỗi Fourier...</h3>
+            <p><i>Phần chuỗi Fourier đòi hỏi kỹ năng tính tích phân từng phần rất nhiều. Học xong bài 4, bạn nhắn mình để nhận code bài 5 nhé, đây sẽ là bài cuối cùng của Tab Bài tập Chương 1!</i></p>
+        </div>
+        <div id="placeholder-bai4" class="placeholder-box" style="border: 2px dashed #cbd5e1; padding: 2rem; text-align: center; color: #64748b; border-radius: 8px; margin-top: 2rem; background-color: #f8fafc;">
+            <h3>⏳ Không gian dành cho Bài 4: Chuỗi lũy thừa & Khai triển Maclaurin...</h3>
+            <p><i>Phần này cực kỳ quan trọng vì chứa dạng tìm miền hội tụ và tính tổng chuỗi. Khi nào bạn sẵn sàng, hãy gọi mình dán code nhé!</i></p>
+        </div>
+        <div id="placeholder-bai3" class="placeholder-box" style="border: 2px dashed #cbd5e1; padding: 2rem; text-align: center; color: #64748b; border-radius: 8px; margin-top: 2rem; background-color: #f8fafc;">
+            <h3>⏳ Không gian dành cho Bài 3: Chuỗi đan dấu & Có dấu bất kỳ...</h3>
+            <p><i>Bạn hãy dán code Bài 3 vào đây ở lần học tiếp theo nhé!</i></p>
+        </div>
+        <!-- BẠN CHỈ CẦN DÁN CODE BÀI 2 VÀO NGAY DƯỚI DÒNG NÀY Ở LẦN SAU -->
+        
+        <div id="placeholder-bai2" class="placeholder-box">
+            <h3>⏳ Không gian dành cho Bài 2, 3, 4, 5...</h3>
+            <p><i>Phần bài tập của các bài tiếp theo sẽ được dán đè vào khu vực này ở bản cập nhật sau để bạn không bị quá tải.</i></p>
+        </div>
+
+        <!-- ======================================================================== -->
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <h2>TuanHungDJ - Math & Code</h2>
+        <p>Hệ thống ôn luyện Giải tích 3 trực tuyến dành cho sinh viên.</p>
+        <p>Mọi liên hệ, đóng góp ý kiến hoặc thắc mắc bài tập vui lòng nhắn qua Gmail:</p>
+        <p>✉️ <a href="mailto:tuanhungsenpai7@gmail.com">tuanhungsenpai7@gmail.com</a></p>
+        <p style="margin-top: 1.5rem; font-size: 0.9rem; color: #475569;">© 2026 Bản quyền thuộc về TuanHungDJ.</p>
+    </footer>
+
+    <!-- Script điều khiển nút Ẩn/Hiện Lời giải -->
+    <script>
+        function toggleSolution(solId) {
+            var sol = document.getElementById(solId);
+            var btn = sol.previousElementSibling;
+            
+            if (sol.style.display === "none" || sol.style.display === "") {
+                sol.style.display = "block";
+                btn.innerHTML = "🙈 Ẩn lời giải chi tiết";
+                btn.style.backgroundColor = "#cbd5e1";
+            } else {
+                sol.style.display = "none";
+                btn.innerHTML = "👁️ Xem lời giải chi tiết";
+                btn.style.backgroundColor = "#e2e8f0";
+            }
+        }
+    </script>
+    <nav>
+        <a href="ly_thuyet.html">📚 Lý Thuyết Chương 1</a>
+        <a href="bai_tap.html">✏️ Bài Tập Luyện Tập</a>
+        <a href="luyen_de.html" class="active">📝 Luyện Đề Thi</a>
+        
+        <!-- Nút Đăng xuất được đẩy sang góc phải -->
+        <a href="#" onclick="logout()" style="float: right; background-color: #ef4444; color: white;">🚪 Đăng xuất</a>
+    </nav>
+    <script>
+        // Hàm xử lý đăng xuất
+        function logout() {
+            const confirmLogout = confirm("Bạn có chắc chắn muốn thoát khỏi hệ thống ôn tập Giải tích 3?");
+            if (confirmLogout) {
+                // Xóa toàn bộ vé thông hành trong bộ nhớ tạm
+                sessionStorage.removeItem('isLoggedIn');
+                sessionStorage.removeItem('currentUser');
+                
+                // Đưa về trang đăng nhập
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
