@@ -2293,17 +2293,17 @@
             <span style="font-size: 1rem; color: #475569; font-weight: normal;">(Kéo lên trên để xem các câu sai và đọc giải thích chi tiết)</span>`;
             resultBox.style.display = 'block';
             
-            // Trượt êm xuống kết quả
+// Trượt êm xuống kết quả
             resultBox.scrollIntoView({ behavior: 'smooth' });
         }
-    <script>
-        // 1. KIỂM TRA QUYỀN TRUY CẬP (Nếu chưa đăng nhập thì đuổi ra ngoài)
+    </script> <script>
+        // 1. KIỂM TRA QUYỀN TRUY CẬP
         if (sessionStorage.getItem('isLoggedIn') !== 'true') {
             alert("⛔ CẢNH BÁO: Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn!");
             window.location.href = 'index.html'; 
         }
 
-        // 2. CẤU HÌNH FIREBASE (Phải giống hệt bên index.html)
+        // 2. CẤU HÌNH FIREBASE (Đã sửa lỗi 2: Gộp chung và chỉ khởi tạo 1 lần)
         const firebaseConfig = {
             apiKey: "AIzaSyDt9CoUM6FiU_ImjYTDD1UwKEXcaxK0vuw",
             authDomain: "giai-tich-3-chuong-1-hust.firebaseapp.com",
@@ -2313,7 +2313,11 @@
             appId: "1:273977526322:web:433839123a7ea3bab2942b",
             measurementId: "G-ERY22GZ58G"
         };
-        firebase.initializeApp(firebaseConfig);
+        
+        // Kiểm tra xem app đã tồn tại chưa để tránh lỗi "Firebase App already exists"
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
 
         // 3. HÀM ĐỒNG BỘ THỜI GIAN LÊN ĐÁM MÂY
@@ -2326,7 +2330,6 @@
                     
                     if (doc.exists) {
                         const data = doc.data();
-                        // Tính số giây từ lúc đăng nhập đến hiện tại
                         const sessionTimeInSeconds = Math.floor((Date.now() - data.lastLoginTimestamp) / 1000);
                         const previousTotal = data.totalTime || 0;
 
@@ -2342,23 +2345,18 @@
             }
         }
 
-        // 4. HÀM XỬ LÝ KHI BẤM NÚT "ĐĂNG XUẤT"
+        // 4. HÀM ĐĂNG XUẤT THỦ CÔNG
         async function logout() {
             const confirmLogout = confirm("Bạn có chắc chắn muốn thoát? Hệ thống sẽ lưu lại thời gian học của bạn.");
             if (confirmLogout) {
-                // Đợi đồng bộ thời gian xong mới cho thoát
                 await syncTimeAndOffline(); 
-                
-                // Xóa vé thông hành
                 sessionStorage.removeItem('isLoggedIn');
                 sessionStorage.removeItem('currentUser');
-                
-                // Trả về trang chủ
                 window.location.href = 'index.html';
             }
         }
 
-        // 5. HÀM XỬ LÝ KHI TẮT TAB/TRÌNH DUYỆT ĐỘT NGỘT (Chống kẹt Online)
+        // 5. XỬ LÝ KHI TẮT TAB ĐỘT NGỘT (Chống kẹt Online)
         window.addEventListener('beforeunload', function (e) {
             const username = sessionStorage.getItem('currentUser');
             if (username) {
@@ -2377,23 +2375,8 @@
                 });
             }
         });
-    </script>
-    <!-- ĐỘNG CƠ FIREBASE BÁO ONLINE VÀ AUTO-SAVE MỖI 5 GIÂY -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDt9CoUM6FiU_ImjYTDD1UwKEXcaxK0vuw",
-            authDomain: "giai-tich-3-chuong-1-hust.firebaseapp.com",
-            projectId: "giai-tich-3-chuong-1-hust",
-            storageBucket: "giai-tich-3-chuong-1-hust.firebasestorage.app",
-            messagingSenderId: "273977526322",
-            appId: "1:273977526322:web:433839123a7ea3bab2942b"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
-        // TỰ ĐỘNG LƯU THỜI GIAN MỖI 5 GIÂY (Chống Reset, Chống mất dữ liệu khi tắt tab)
+        // 6. AUTO-SAVE THỜI GIAN MỖI 5 GIÂY (Chống mất dữ liệu)
         setInterval(() => {
             const username = sessionStorage.getItem('currentUser');
             if (username) {
@@ -2401,23 +2384,15 @@
                 userRef.get().then((doc) => {
                     if (doc.exists) {
                         const data = doc.data();
-                        // Cứ 5 giây trôi qua, cộng thêm 5 giây vào tổng thời gian (totalTime)
                         userRef.update({
                             totalTime: (data.totalTime || 0) + 5,
-                            lastPing: Date.now(), // Báo hiệu với Admin là "Tôi vẫn đang online"
+                            lastPing: Date.now(), 
                             isOnline: true
                         });
                     }
                 });
             }
         }, 5000);
-
-        // HÀM ĐĂNG XUẤT THỦ CÔNG
-        function logout() {
-            sessionStorage.removeItem('isLoggedIn');
-            sessionStorage.removeItem('currentUser');
-            window.location.href = 'index.html';
-        }
     </script>
 </body>
 </html>
