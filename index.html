@@ -38,8 +38,8 @@
         #adminAuth button:hover { background: #d97706; }
         
         /* Bảng Quản Lý Của Admin */
-        #adminPanel { display: none; background: #334155; padding: 1rem; border-radius: 8px; margin-top: 1rem; border: 2px solid #22c55e; max-height: 400px; overflow-y: auto;}
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #475569; font-size: 0.85rem;}
+        #adminPanel { display: none; background: #334155; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; border: 2px solid #22c55e; max-height: 500px; overflow-y: auto;}
+        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #475569; font-size: 0.85rem;}
         
         .approve-btn { background: #22c55e; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: bold;}
         .approve-btn:hover { background: #16a34a; }
@@ -48,7 +48,7 @@
         .revoke-btn:hover { background: #dc2626; }
     </style>
 
-    <!-- NHÚNG THƯ VIỆN FIREBASE -->
+    <!-- NHÚNG THƯ VIỆN FIREBASE TỪ GOOGLE -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 </head>
@@ -113,15 +113,15 @@
             <h4 style="margin-top: 0; color: #4ade80; border-bottom: 1px solid #475569; padding-bottom: 5px;">✅ Danh sách chờ duyệt:</h4>
             <div id="userList"></div>
 
-            <h4 style="margin-top: 1.5rem; color: #38bdf8; border-bottom: 1px solid #475569; padding-bottom: 5px;">🎓 Học viên đang học:</h4>
+            <h4 style="margin-top: 1.5rem; color: #38bdf8; border-bottom: 1px solid #475569; padding-bottom: 5px;">🎓 Quản lý Học viên & Thời gian:</h4>
             <div id="approvedList"></div>
 
-            <button onclick="closeAdminPanel()" style="width: 100%; margin-top: 15px; padding: 8px; background: #64748b; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold;">Đóng Admin Panel</button>
+            <button onclick="closeAdminPanel()" style="width: 100%; margin-top: 20px; padding: 10px; background: #64748b; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold;">Đóng Admin Panel</button>
         </div>
 
     </div>
 
-    <!-- MÃ ĐIỀU KHIỂN HỆ THỐNG (JAVASCRIPT) -->
+    <!-- SCRIPT ĐIỀU KHIỂN HỆ THỐNG (FIREBASE & LOGIC) -->
     <script>
         // 1. CẤU HÌNH FIREBASE CỦA BẠN
         const firebaseConfig = {
@@ -138,7 +138,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ================= LOGIC SINH VIÊN =================
+        // ================= LOGIC GIAO DIỆN =================
         function toggleForm(type) {
             document.getElementById('message').innerText = "";
             if (type === 'register') {
@@ -156,7 +156,9 @@
             msgBox.className = type;
         }
 
-        // HÀM ĐĂNG KÝ (ĐẨY LÊN FIREBASE)
+        // ================= LOGIC SINH VIÊN =================
+        
+        // HÀM ĐĂNG KÝ (Lưu thêm dữ liệu thời gian)
         async function handleRegister() {
             const fullname = document.getElementById('regFullName').value;
             const username = document.getElementById('regUsername').value;
@@ -165,28 +167,31 @@
             if (!fullname || !username || !password) return showMessage("Vui lòng điền đủ thông tin!", "error");
 
             try {
-                // Kiểm tra xem MSSV đã có ai đăng ký chưa
                 const userDoc = await db.collection("users").doc(username).get();
                 if (userDoc.exists) {
                     return showMessage("Mã sinh viên này đã được đăng ký!", "error");
                 }
 
-                // Ghi thông tin tài khoản với trạng thái chờ duyệt (pending)
+                // Ghi thông tin lên đám mây KÈM THEO biến theo dõi thời gian
                 await db.collection("users").doc(username).set({
                     fullname: fullname,
                     password: password,
                     status: 'pending',
+                    isOnline: false,         // Mặc định offline
+                    totalTime: 0,            // Tổng thời gian học (giây)
+                    lastLoginTime: '',       // Chuỗi văn bản hiển thị giờ
+                    lastLoginTimestamp: 0,   // Mốc thời gian để tính toán
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                showMessage("Đăng ký thành công! Vui lòng chờ Admin duyệt để được vào học.", "success");
+                showMessage("Đăng ký thành công! Vui lòng chờ Admin duyệt.", "success");
                 setTimeout(() => toggleForm('login'), 3000);
             } catch (error) {
                 showMessage("Lỗi kết nối máy chủ: " + error.message, "error");
             }
         }
 
-        // HÀM ĐĂNG NHẬP (LẤY TỪ FIREBASE)
+        // HÀM ĐĂNG NHẬP (Bật đèn Online)
         async function handleLogin() {
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
@@ -201,32 +206,64 @@
                 const userData = userDoc.data();
                 if (userData.password !== password) return showMessage("Sai mật khẩu!", "error");
                 
-                // Xử lý các trạng thái tài khoản
                 if (userData.status === 'pending') {
-                    return showMessage("Tài khoản của bạn ĐANG CHỜ DUYỆT. Vui lòng liên hệ Admin!", "warning");
+                    return showMessage("Tài khoản ĐANG CHỜ DUYỆT. Vui lòng liên hệ Admin!", "warning");
                 }
                 if (userData.status === 'revoked') {
-                    return showMessage("Tài khoản của bạn đã BỊ HỦY quyền truy cập khóa học!", "error");
+                    return showMessage("Tài khoản đã BỊ HỦY quyền truy cập khóa học!", "error");
                 }
 
                 if (userData.status === 'approved') {
-                    // Cấp vé thông hành (Session) nếu thành công
+                    // Lấy thời gian đăng nhập thực tế
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString('vi-VN') + ' - ' + now.toLocaleDateString('vi-VN');
+
+                    // Bật đèn Online và lưu mốc thời gian lên Firebase
+                    await db.collection("users").doc(username).update({
+                        isOnline: true,
+                        lastLoginTime: timeString,
+                        lastLoginTimestamp: Date.now()
+                    });
+
+                    // Cấp vé thông hành vào Session Storage (Lưu username để sau này tính giờ)
                     sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('currentUser', userData.fullname);
-                    window.location.href = 'ly_thuyet.html'; // Chuyển hướng vào trang học
+                    sessionStorage.setItem('currentUser', username); 
+                    
+                    // Chuyển hướng vào trang học
+                    window.location.href = 'ly_thuyet.html'; 
                 }
             } catch (error) {
                 showMessage("Lỗi kết nối máy chủ!", "error");
             }
         }
 
-        // ================= LOGIC ADMIN & BẢO MẬT PIN =================
+        // ================= XỬ LÝ KHI ĐÓNG TRÌNH DUYỆT ĐỘT NGỘT =================
+        window.addEventListener('beforeunload', function (e) {
+            const username = sessionStorage.getItem('currentUser');
+            if (username) {
+                const userRef = db.collection("users").doc(username);
+                userRef.get().then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const sessionTimeInSeconds = Math.floor((Date.now() - data.lastLoginTimestamp) / 1000);
+                        const previousTotal = data.totalTime || 0;
+
+                        userRef.update({
+                            isOnline: false,
+                            totalTime: previousTotal + sessionTimeInSeconds
+                        });
+                    }
+                });
+            }
+        });
+
+        // ================= LOGIC ADMIN & BẢO MẬT =================
         const ADMIN_PIN = "190922";
         const MAX_FAIL_ATTEMPTS = 3;
 
         function openAdminAuth() {
             if (localStorage.getItem('adminDeviceBanned') === 'true') {
-                alert("🚫 CẢNH BÁO BẢO MẬT: Thiết bị này đã bị cấm vĩnh viễn khỏi khu vực Admin do nhập sai mã PIN quá nhiều lần!");
+                alert("🚫 CẢNH BÁO BẢO MẬT: Thiết bị này đã bị cấm truy cập khu vực Admin!");
                 return;
             }
 
@@ -254,14 +291,11 @@
             const errorMsgBox = document.getElementById('adminErrorMsg');
 
             if (enteredPin === ADMIN_PIN) {
-                // ĐĂNG NHẬP ADMIN THÀNH CÔNG
                 localStorage.setItem('adminFailedAttempts', '0'); 
                 document.getElementById('adminAuth').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
-                // Gọi hàm lắng nghe thay đổi dữ liệu Real-time
-                renderUserListRealtime();
+                renderUserListRealtime(); // Kích hoạt bảng điều khiển
             } else {
-                // NHẬP SAI PIN
                 failedAttempts++;
                 localStorage.setItem('adminFailedAttempts', failedAttempts);
                 let attemptsLeft = MAX_FAIL_ATTEMPTS - failedAttempts;
@@ -269,10 +303,10 @@
                 if (attemptsLeft <= 0) {
                     localStorage.setItem('adminDeviceBanned', 'true');
                     document.getElementById('adminAuth').style.display = 'none';
-                    alert("🚨 BÁO ĐỘNG: Bạn đã nhập sai mã PIN 3 lần. Thiết bị này CẤM truy cập khu vực Admin vĩnh viễn!");
+                    alert("🚨 BÁO ĐỘNG: Nhập sai mã PIN 3 lần. Thiết bị CẤM truy cập khu vực Admin vĩnh viễn!");
                 } else {
                     errorMsgBox.style.display = 'block';
-                    errorMsgBox.innerText = `Sai mã PIN! Bạn còn ${attemptsLeft} lần thử trước khi bị cấm.`;
+                    errorMsgBox.innerText = `Sai mã PIN! Còn ${attemptsLeft} lần thử.`;
                     document.getElementById('adminPinInput').value = '';
                 }
             }
@@ -282,9 +316,8 @@
             document.getElementById('adminPanel').style.display = 'none';
         }
 
-        // ================= LẮNG NGHE & QUẢN LÝ DỮ LIỆU ĐÁM MÂY =================
+        // ================= QUẢN LÝ DỮ LIỆU ĐÁM MÂY (REAL-TIME) =================
         function renderUserListRealtime() {
-            // Hàm onSnapshot sẽ tự động cập nhật lại danh sách nếu có sự thay đổi từ bất kì ai trên Internet
             db.collection("users").onSnapshot((snapshot) => {
                 let pendingHTML = '';
                 let approvedHTML = '';
@@ -300,9 +333,21 @@
                         </div>`;
                     } 
                     else if (user.status === 'approved') {
-                        approvedHTML += `<div class="user-row" style="color: white;">
-                            <span><strong>${user.fullname}</strong><br><span style="color:#94a3b8; font-size: 0.75rem;">MSSV: ${username}</span></span>
-                            <button class="revoke-btn" onclick="revokeUser('${username}')">Hủy Học</button>
+                        // Tính toán hiển thị Online, Giờ, Phút
+                        let onlineBadge = user.isOnline ? '<span style="color:#4ade80; font-weight:bold;">🟢 Đang Online</span>' : '<span style="color:#94a3b8;">🔴 Offline</span>';
+                        
+                        let totalMinutes = user.totalTime ? Math.floor(user.totalTime / 60) : 0;
+                        let lastAccess = user.lastLoginTime ? user.lastLoginTime : "Chưa từng đăng nhập";
+
+                        approvedHTML += `<div class="user-row" style="color: white; flex-direction: column; align-items: flex-start; gap: 8px;">
+                            <div style="display:flex; justify-content: space-between; width: 100%;">
+                                <span><strong>${user.fullname}</strong> <span style="color:#94a3b8; font-size: 0.8rem;">(${username})</span></span>
+                                <button class="revoke-btn" onclick="revokeUser('${username}')">Hủy Học</button>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #cbd5e1; background: #1e293b; padding: 6px; border-radius: 4px; width: 100%; box-sizing: border-box;">
+                                ${onlineBadge} | ⏱ Tổng thời gian học: <strong style="color: #fcd34d;">${totalMinutes} phút</strong><br>
+                                <span style="color:#94a3b8; display: inline-block; margin-top: 3px;">🕒 Đăng nhập cuối: ${lastAccess}</span>
+                            </div>
                         </div>`;
                     }
                 });
