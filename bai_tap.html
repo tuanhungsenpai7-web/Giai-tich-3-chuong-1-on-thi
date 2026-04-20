@@ -749,5 +749,46 @@
             }
         });
     </script>
+    <!-- ĐỘNG CƠ FIREBASE BÁO ONLINE VÀ AUTO-SAVE MỖI 5 GIÂY -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDt9CoUM6FiU_ImjYTDD1UwKEXcaxK0vuw",
+            authDomain: "giai-tich-3-chuong-1-hust.firebaseapp.com",
+            projectId: "giai-tich-3-chuong-1-hust",
+            storageBucket: "giai-tich-3-chuong-1-hust.firebasestorage.app",
+            messagingSenderId: "273977526322",
+            appId: "1:273977526322:web:433839123a7ea3bab2942b"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // TỰ ĐỘNG LƯU THỜI GIAN MỖI 5 GIÂY (Chống Reset, Chống mất dữ liệu khi tắt tab)
+        setInterval(() => {
+            const username = sessionStorage.getItem('currentUser');
+            if (username) {
+                const userRef = db.collection("users").doc(username);
+                userRef.get().then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        // Cứ 5 giây trôi qua, cộng thêm 5 giây vào tổng thời gian (totalTime)
+                        userRef.update({
+                            totalTime: (data.totalTime || 0) + 5,
+                            lastPing: Date.now(), // Báo hiệu với Admin là "Tôi vẫn đang online"
+                            isOnline: true
+                        });
+                    }
+                });
+            }
+        }, 5000);
+
+        // HÀM ĐĂNG XUẤT THỦ CÔNG
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+    </script>
 </body>
 </html>
