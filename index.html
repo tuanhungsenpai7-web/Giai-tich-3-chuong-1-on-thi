@@ -38,7 +38,7 @@
         #adminAuth button:hover { background: #d97706; }
         
         /* Bảng Quản Lý Của Admin */
-        #adminPanel { display: none; background: #334155; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; border: 2px solid #22c55e; max-height: 500px; overflow-y: auto;}
+        #adminPanel { display: none; background: #334155; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; border: 2px solid #22c55e; max-height: 500px; overflow-y: auto; width: 350px;}
         .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #475569; font-size: 0.85rem;}
         
         .approve-btn { background: #22c55e; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: bold;}
@@ -46,6 +46,9 @@
         
         .revoke-btn { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: bold;}
         .revoke-btn:hover { background: #dc2626; }
+        
+        /* Chỉnh font giờ to rõ */
+        .time-ticker { color: #fcd34d; font-size: 1.1rem; font-weight: bold; font-family: monospace;}
     </style>
 
     <!-- NHÚNG THƯ VIỆN FIREBASE TỪ GOOGLE -->
@@ -134,7 +137,6 @@
             measurementId: "G-ERY22GZ58G"
         };
 
-        // 2. KHỞI TẠO FIREBASE VÀ KẾT NỐI DATABASE
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -157,8 +159,6 @@
         }
 
         // ================= LOGIC SINH VIÊN =================
-        
-        // HÀM ĐĂNG KÝ (Lưu thêm dữ liệu thời gian)
         async function handleRegister() {
             const fullname = document.getElementById('regFullName').value;
             const username = document.getElementById('regUsername').value;
@@ -172,15 +172,14 @@
                     return showMessage("Mã sinh viên này đã được đăng ký!", "error");
                 }
 
-                // Ghi thông tin lên đám mây KÈM THEO biến theo dõi thời gian
                 await db.collection("users").doc(username).set({
                     fullname: fullname,
                     password: password,
                     status: 'pending',
-                    isOnline: false,         // Mặc định offline
-                    totalTime: 0,            // Tổng thời gian học (giây)
-                    lastLoginTime: '',       // Chuỗi văn bản hiển thị giờ
-                    lastLoginTimestamp: 0,   // Mốc thời gian để tính toán
+                    isOnline: false,         
+                    totalTime: 0,            
+                    lastLoginTime: '',       
+                    lastLoginTimestamp: 0,   
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
@@ -191,7 +190,6 @@
             }
         }
 
-        // HÀM ĐĂNG NHẬP (Bật đèn Online)
         async function handleLogin() {
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
@@ -206,56 +204,27 @@
                 const userData = userDoc.data();
                 if (userData.password !== password) return showMessage("Sai mật khẩu!", "error");
                 
-                if (userData.status === 'pending') {
-                    return showMessage("Tài khoản ĐANG CHỜ DUYỆT. Vui lòng liên hệ Admin!", "warning");
-                }
-                if (userData.status === 'revoked') {
-                    return showMessage("Tài khoản đã BỊ HỦY quyền truy cập khóa học!", "error");
-                }
+                if (userData.status === 'pending') return showMessage("Tài khoản ĐANG CHỜ DUYỆT. Vui lòng liên hệ Admin!", "warning");
+                if (userData.status === 'revoked') return showMessage("Tài khoản đã BỊ HỦY quyền truy cập khóa học!", "error");
 
                 if (userData.status === 'approved') {
-                    // Lấy thời gian đăng nhập thực tế
                     const now = new Date();
                     const timeString = now.toLocaleTimeString('vi-VN') + ' - ' + now.toLocaleDateString('vi-VN');
 
-                    // Bật đèn Online và lưu mốc thời gian lên Firebase
                     await db.collection("users").doc(username).update({
                         isOnline: true,
                         lastLoginTime: timeString,
                         lastLoginTimestamp: Date.now()
                     });
 
-                    // Cấp vé thông hành vào Session Storage (Lưu username để sau này tính giờ)
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('currentUser', username); 
-                    
-                    // Chuyển hướng vào trang học
                     window.location.href = 'ly_thuyet.html'; 
                 }
             } catch (error) {
                 showMessage("Lỗi kết nối máy chủ!", "error");
             }
         }
-
-        // ================= XỬ LÝ KHI ĐÓNG TRÌNH DUYỆT ĐỘT NGỘT =================
-        window.addEventListener('beforeunload', function (e) {
-            const username = sessionStorage.getItem('currentUser');
-            if (username) {
-                const userRef = db.collection("users").doc(username);
-                userRef.get().then((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const sessionTimeInSeconds = Math.floor((Date.now() - data.lastLoginTimestamp) / 1000);
-                        const previousTotal = data.totalTime || 0;
-
-                        userRef.update({
-                            isOnline: false,
-                            totalTime: previousTotal + sessionTimeInSeconds
-                        });
-                    }
-                });
-            }
-        });
 
         // ================= LOGIC ADMIN & BẢO MẬT =================
         const ADMIN_PIN = "190922";
@@ -294,7 +263,7 @@
                 localStorage.setItem('adminFailedAttempts', '0'); 
                 document.getElementById('adminAuth').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
-                renderUserListRealtime(); // Kích hoạt bảng điều khiển
+                startAdminTicker(); // Khởi động hệ thống đếm giây
             } else {
                 failedAttempts++;
                 localStorage.setItem('adminFailedAttempts', failedAttempts);
@@ -316,45 +285,77 @@
             document.getElementById('adminPanel').style.display = 'none';
         }
 
-        // ================= QUẢN LÝ DỮ LIỆU ĐÁM MÂY (REAL-TIME) =================
-        function renderUserListRealtime() {
+        // ================= QUẢN LÝ DỮ LIỆU ĐÁM MÂY & ĐẾM GIÂY =================
+        let currentUsersSnapshot = [];
+        let timerInterval = null;
+
+        function startAdminTicker() {
+            // Lắng nghe dữ liệu thay đổi từ Firebase Đám mây
             db.collection("users").onSnapshot((snapshot) => {
-                let pendingHTML = '';
-                let approvedHTML = '';
-
+                currentUsersSnapshot = [];
                 snapshot.forEach((doc) => {
-                    let username = doc.id;
-                    let user = doc.data();
-                    
-                    if (user.status === 'pending') {
-                        pendingHTML += `<div class="user-row" style="color: white;">
-                            <span><strong>${user.fullname}</strong><br><span style="color:#94a3b8; font-size: 0.75rem;">MSSV: ${username}</span></span>
-                            <button class="approve-btn" onclick="approveUser('${username}')">Duyệt</button>
-                        </div>`;
-                    } 
-                    else if (user.status === 'approved') {
-                        // Tính toán hiển thị Online, Giờ, Phút
-                        let onlineBadge = user.isOnline ? '<span style="color:#4ade80; font-weight:bold;">🟢 Đang Online</span>' : '<span style="color:#94a3b8;">🔴 Offline</span>';
-                        
-                        let totalMinutes = user.totalTime ? Math.floor(user.totalTime / 60) : 0;
-                        let lastAccess = user.lastLoginTime ? user.lastLoginTime : "Chưa từng đăng nhập";
-
-                        approvedHTML += `<div class="user-row" style="color: white; flex-direction: column; align-items: flex-start; gap: 8px;">
-                            <div style="display:flex; justify-content: space-between; width: 100%;">
-                                <span><strong>${user.fullname}</strong> <span style="color:#94a3b8; font-size: 0.8rem;">(${username})</span></span>
-                                <button class="revoke-btn" onclick="revokeUser('${username}')">Hủy Học</button>
-                            </div>
-                            <div style="font-size: 0.8rem; color: #cbd5e1; background: #1e293b; padding: 6px; border-radius: 4px; width: 100%; box-sizing: border-box;">
-                                ${onlineBadge} | ⏱ Tổng thời gian học: <strong style="color: #fcd34d;">${totalMinutes} phút</strong><br>
-                                <span style="color:#94a3b8; display: inline-block; margin-top: 3px;">🕒 Đăng nhập cuối: ${lastAccess}</span>
-                            </div>
-                        </div>`;
-                    }
+                    currentUsersSnapshot.push({ id: doc.id, data: doc.data() });
                 });
                 
-                document.getElementById('userList').innerHTML = pendingHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Không có tài khoản chờ duyệt.</i>";
-                document.getElementById('approvedList').innerHTML = approvedHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Chưa có học viên nào.</i>";
+                // Vẽ lại giao diện ngay khi có dữ liệu mới
+                updateAdminUI();
+                
+                // Kích hoạt bộ đếm thời gian nội bộ vẽ lại giao diện mỗi 1 giây (để nhảy số)
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateAdminUI, 1000);
+                }
             });
+        }
+
+        // Hàm vẽ lại bảng Admin mỗi 1 giây
+        function updateAdminUI() {
+            let pendingHTML = '';
+            let approvedHTML = '';
+
+            currentUsersSnapshot.forEach((userObj) => {
+                let username = userObj.id;
+                let user = userObj.data;
+
+                if (user.status === 'pending') {
+                    pendingHTML += `<div class="user-row" style="color: white;">
+                        <span><strong>${user.fullname}</strong><br><span style="color:#94a3b8; font-size: 0.75rem;">MSSV: ${username}</span></span>
+                        <button class="approve-btn" onclick="approveUser('${username}')">Duyệt</button>
+                    </div>`;
+                } 
+                else if (user.status === 'approved') {
+                    // TÍNH TOÁN THỜI GIAN NHẢY SỐ (Local Ticking)
+                    let totalSeconds = user.totalTime || 0;
+
+                    // Nếu sinh viên ĐANG HỌC, cộng thêm số giây trôi qua từ lúc đăng nhập đến hiện tại
+                    if (user.isOnline && user.lastLoginTimestamp) {
+                        totalSeconds += Math.floor((Date.now() - user.lastLoginTimestamp) / 1000);
+                    }
+
+                    // Quy đổi ra Phút (Giây)
+                    let mins = Math.floor(totalSeconds / 60);
+                    let secs = totalSeconds % 60;
+                    
+                    // Để định dạng số luôn có 2 chữ số (VD: 05 giây)
+                    let formattedSecs = secs < 10 ? '0' + secs : secs;
+                    
+                    let lastAccess = user.lastLoginTime ? user.lastLoginTime : "Chưa từng đăng nhập";
+
+                    approvedHTML += `<div class="user-row" style="color: white; flex-direction: column; align-items: flex-start; gap: 8px;">
+                        <div style="display:flex; justify-content: space-between; width: 100%;">
+                            <span><strong>${user.fullname}</strong> <span style="color:#94a3b8; font-size: 0.8rem;">(${username})</span></span>
+                            <button class="revoke-btn" onclick="revokeUser('${username}')">Hủy Học</button>
+                        </div>
+                        <div style="background: #1e293b; padding: 10px; border-radius: 4px; width: 100%; box-sizing: border-box;">
+                            <span style="color: #cbd5e1; font-size: 0.85rem;">⏱ Thời gian học:</span> 
+                            <span class="time-ticker">${mins} phút (${formattedSecs} giây)</span><br>
+                            <span style="color:#64748b; display: inline-block; margin-top: 5px; font-size: 0.75rem;">🕒 Truy cập lúc: ${lastAccess}</span>
+                        </div>
+                    </div>`;
+                }
+            });
+            
+            document.getElementById('userList').innerHTML = pendingHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Không có tài khoản chờ duyệt.</i>";
+            document.getElementById('approvedList').innerHTML = approvedHTML || "<i style='color:#94a3b8; font-size: 0.85rem;'>Chưa có học viên nào.</i>";
         }
 
         async function approveUser(username) {
